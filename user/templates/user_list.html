@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %} 
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">User List</h2>   
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="btn-group mt-3">
+            <a href="{% url 'user:user_add' %}" class="btn btn-primary me-2" title="Add New User" data-toggle="tooltip">
+                <i class="fas fa-plus"></i> Add User
+            </a>
+            <button class="btn btn-success me-2" title="Import Users from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
+                <i class="fas fa-file-import"></i> Import
+            </button>
+            <a href="{% url 'user:export_users' %}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
+                <i class="fas fa-file-export"></i> Export
+            </a>
+        </div>
+
+        <!-- Search form -->
+        <form method="GET" action="{% url 'user:user_list' %}" class="form-inline">
+            <div class="input-group">
+                <input type="text" name="q" value="{{ query|default_if_none:'' }}" class="form-control" placeholder="Search users..." aria-label="Search users">
+                <select name="role" class="form-control ms-2">
+                    <option value="">Select Role</option>
+                    {% for role in roles %}
+                        <option value="{{ role.role_name }}" {% if role.role_name == selected_role %}selected{% endif %}>{{ role.role_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-outline-success ms-2">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <table class="table table-hover table-bordered mt-4">
+        <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th class="text-center">Profile Picture</th>
+                <th>Created At</th>
+                <th>Updated At</th> 
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr ondblclick="window.location.href='{% url 'user:user_detail' user.pk %}'" style="cursor: pointer;">
+                <td>{{ forloop.counter }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.role.role_name }}</td>
+                <td class="text-center">
+                    {% if user.profile_picture_url %}
+                    <img src="{{ user.profile_picture_url }}" alt="Profile Picture" width="170" height="170" class="img-fluid">
+
+                    {% else %}
+                        No image
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at|date:"Y-m-d H:i" }}</td> 
+                <td>{{ user.updated_at|date:"Y-m-d H:i" }}</td> 
+                <td>
+                    <div class="btn-group" role="group">
+                        {% comment %} <a href="{% url 'user:user_detail' user.pk %}" class="btn btn-info btn-sm" title="View User Details" data-bs-toggle="tooltip">
+                            <i class="fas fa-info-circle"></i>
+                        </a> {% endcomment %}
+                        <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-bs-toggle="tooltip">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-bs-toggle="tooltip">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="text-center">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Users from Excel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Import Form -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'user:import_users' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_excel_file">Upload Excel File:</label>
+                        <input type="file" name="excel_file" class="form-control" id="id_excel_file" required>
+                    </div>
+                    <div class="mb-4">
+                        <span>
+                            Please download and use the <a href="{% static 'excel/import_users.xlsx' %}" target="_blank">Excel template</a>. The Excel file must contain exactly one sheet with the required columns.
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

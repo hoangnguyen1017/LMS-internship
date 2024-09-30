@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}User-Module List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>User-Module Assignments</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Module</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_module in user_modules %}
+            <tr>
+                <td>{{ user_module.user.username }}</td>
+                <td>{{ user_module.module.module_name }}</td>
+                <td>
+                    <a href="{% url 'user_module_edit' user_module.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'user_module_delete' user_module.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'user_module_add' %}" class="btn btn-primary">Assign Module to User</a>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Question List{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Question List</h2>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Correct Answer</th>
+                <th>Subject</th>
+                <th>Category</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question in questions %}
+            <tr>
+                <td>{{ question.question_text }}</td>
+                <td>{{ question.correct_answer }}</td>
+                <td>
+                    {% if question.subject %}
+                        {{ question.subject.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+                <td>
+                    {% if question.category %}
+                        {{ question.category.name }}
+                    {% else %}
+                        No Category
+                    {% endif %}
+                </td>
+                <td>{{ question.created_at }}</td>
+                <td>
+                    <a href="{% url 'question:question_detail' question.pk %}" class="btn btn-info">View</a>
+                    <a href="{% url 'question:question_edit' question.pk %}" class="btn btn-warning">Edit</a>
+                    <a href="{% url 'question:answer_add' question.pk %}" class="btn btn-primary">Add Answer</a>
+                    <form action="{% url 'question:question_delete' question.pk %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="{% url 'question:question_add' %}" class="btn btn-success">Add New Question</a>
+</div>
+{% endblock %}

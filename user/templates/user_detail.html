@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }} Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Details</h2>
+    <div class="row">
+        <!-- User Information Card -->
+        <div class="col-md-6">
+            <div class="card p-3 mb-4">
+                <h3 class="card-title">Information</h3>
+                <div class="card-body">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Full Name:</strong> {{ user.full_name }}</p>
+                    <p><strong>Role:</strong> {{ user.role }}</p>
+                    <p><strong>Profile Picture:</strong></p>
+                    {% if user.profile_picture_url %}
+                        <img src="{{ user.profile_picture_url }}" alt="Profile Picture" class="img-fluid" width="150">
+                    {% else %}
+                        <p>No profile picture available</p>
+                    {% endif %}
+                    <p><strong>Created At:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
+                    <p><strong>Updated At:</strong> {{ user.updated_at|date:"Y-m-d H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="col-md-6">
+            <div class="card p-3 mb-4">
+                <h3 class="card-title">Profile</h3>
+                <div class="card-body">
+                    {% if profile %}
+                        <p><strong>Bio:</strong> {{ profile.bio }}</p>
+                        <p><strong>Interests:</strong> {{ profile.interests }}</p>
+                        <p><strong>Learning Style:</strong> {{ profile.learning_style }}</p>
+                        <p><strong>Preferred Language:</strong> {{ profile.preferred_language }}</p>
+                    {% else %}
+                        <p>This user does not have a profile.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personalization Card -->
+    <div class="card p-3 mb-4">
+        <h3 class="card-title">Personalization</h3>
+        <div class="card-body">
+            {% if personalization %}
+                <p><strong>Recommended Courses:</strong> {{ personalization.recommended_courses }}</p>
+                <p><strong>Personalized Learning Path:</strong> {{ personalization.personalized_learning_path }}</p>
+                <p><strong>Learning Style:</strong> {{ personalization.learning_style }}</p>
+            {% else %}
+                <p><strong>This user does not have personalization data.</strong></p>
+            {% endif %}
+        </div>
+    </div>    
+
+    <!-- Action Buttons -->
+    <div class="mt-4">
+        <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning">Edit</a>
+        <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'user:user_list' %}" class="btn btn-secondary">Back to User List</a>
+    </div>
+</div>
+{% endblock %}

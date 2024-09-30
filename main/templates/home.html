@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome to the Learning Management System</h1>
+    
+    <!-- Loop through each module group -->
+    {% for group in module_groups %}
+    <div class="mb-5">
+        <h2 class="text-primary mb-3">{{ group.name }}</h2>  <!-- Display the Module Group name -->
+
+        <div class="row">
+            <!-- Loop through each module within the current group -->
+            {% for module in modules %}
+                {% if module.module_group == group %}
+                <div class="col-md-3 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <!-- Module Icon -->
+                            <div class="icon mb-3">
+                                <i class="{{ module.icon }} fa-3x text-info"></i>
+                            </div>
+
+                            <!-- Module Name -->
+                            <h5 class="card-title">{{ module.module_name }}</h5>
+
+                            <!-- Module Button -->
+                            <a href="{% url module.module_url %}" class="btn btn-outline-primary mt-3">Go to {{ module.module_name }}</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -18,14 +18,36 @@ class UserProfileForm(forms.ModelForm):
     LEARNING_STYLE_CHOICES = [
         ('Visual', 'Visual'),
         ('Auditory', 'Auditory'),
-        ('Reading/Writing', 'Reading/Writing'),
-        ('Kinesthetic', 'Kinesthetic'),
+        ('Logical', 'Logical'),
     ]
     
     INTEREST_CHOICES = [
         ('Technology', 'Technology'),
         ('Art', 'Art'),
+        ('History', 'History'),
+        ('Science', 'Science'),
         ('Business', 'Business'),
+        ('Literature', 'Literature'),
+        ('Music', 'Music'),
+        ('Sports', 'Sports'),
+        ('Cooking', 'Cooking'),
+        ('Photography', 'Photography'),
+        ('Psychology', 'Psychology'),
+        ('Travel', 'Travel'),
+        ('Fitness', 'Fitness'),
+        ('Fashion', 'Fashion'),
+        ('Philosophy', 'Philosophy'),
+        ('Gardening','Gardening'),
+        ('Architecture', 'Architecture'),
+        ('Coding', 'Coding'),
+        ('Economics', 'Economics'),
+        ('Education', 'Education'),
+        ('Biology', 'Biology'),
+        ('Chemistry', 'Chemistry'),
+        ('Mathematics', 'Mathematics'),
+        ('Physics', 'Physics'),
+        ('Film', 'Film'),
+        
     ]
 
     learning_style = forms.ChoiceField(choices=LEARNING_STYLE_CHOICES, required=True)
@@ -54,6 +76,3 @@ class UserPersonalizationForm(forms.ModelForm):
             'recommended_courses': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Enter recommended courses...'}),
             'personalized_learning_path': forms.Textarea(attrs={'rows': 5, 'class': 'form-control', 'placeholder': 'Describe the learning path...'}),
         }
-
-class ExcelImportForm(forms.Form):
-    excel_file = forms.FileField(label="Upload Excel File")

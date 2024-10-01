@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']
 CRISPY_TEMPLATE_PACK = 'bootstrap4'  # or 'bootstrap5'
 
 # Cấu hình để chuyển hướng sau khi đăng nhập thành công
-LOGIN_REDIRECT_URL = '/home/'
+LOGIN_REDIRECT_URL = '/home'
 
 # Cấu hình để chuyển hướng sau khi đăng xuất thành công
 LOGOUT_REDIRECT_URL = '/'

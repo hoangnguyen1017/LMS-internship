@@ -67,6 +67,9 @@ def save_personalization_data(user):
     personalization.learning_style = learning_style
     personalization.save()
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+
 def user_list(request):
     query = request.GET.get('q', '')
     selected_role = request.GET.get('role', '')
@@ -74,6 +77,7 @@ def user_list(request):
     users = User.objects.all()
     roles = Role.objects.all()
 
+    # Tìm kiếm theo tên và vai trò
     if query and selected_role:
         users = users.filter(
             Q(full_name__icontains=query) | Q(username__icontains=query),
@@ -87,6 +91,17 @@ def user_list(request):
         users = users.filter(role__role_name=selected_role)
 
     not_found = not users.exists()
+
+    # Phân trang, mỗi trang có tối đa 5 người dùng
+    paginator = Paginator(users, 5)  # Số lượng người dùng mỗi trang
+    page = request.GET.get('page', 1)
+
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        users = paginator.page(1)
+    except EmptyPage:
+        users = paginator.page(paginator.num_pages)
 
     return render(request, 'user_list.html', {
         'users': users,

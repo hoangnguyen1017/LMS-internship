@@ -1,6 +1,8 @@
 from django import forms
 from .models import User, UserProfile, Role, UserPersonalization
 
+from django.contrib.auth.hashers import make_password
+
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
@@ -14,6 +16,15 @@ class UserForm(forms.ModelForm):
             'profile_picture_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter profile picture URL'}),
         }
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # Mã hóa mật khẩu trước khi lưu
+        if self.cleaned_data['password']:
+            user.password = make_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
+    
 class UserProfileForm(forms.ModelForm):
     LEARNING_STYLE_CHOICES = [
         ('Visual', 'Visual'),

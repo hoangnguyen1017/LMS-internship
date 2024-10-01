@@ -13,25 +13,10 @@
         <a class="navbar-brand" href="{% url 'main:home' %}">FSA</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
-                {% if request.path == '/' or request.path == '/home/' %}
-                    {% for group in module_groups %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="{{ group.id }}" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {{ group.group_name }}
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="{{ group.id }}">
-                                {% for module in group.modules.all %}
-                                    <a class="dropdown-item" href="{% url module.module_url %}"> <i class="{{ module.icon }}"></i> &nbsp;{{ module.module_name }}</a>
-                                {% endfor %}
-                            </div>
-                        </li>
-                    {% endfor %}
-                {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
                 {% if request.session.user_id %}
                     <li class="nav-item">
-                        <!-- Form logout -->
                         <form action="{% url 'main:logout' %}" method="post" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="nav-link btn btn-link" style="display: inline; padding: 0; border: none; background: none;">

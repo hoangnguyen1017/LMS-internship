@@ -7,6 +7,7 @@ class Course(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    course_picture_url = models.URLField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return self.course_name

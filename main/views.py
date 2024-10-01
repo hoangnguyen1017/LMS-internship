@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from .forms import RegistrationForm, CustomLoginForm, Registration
 from module_group.models import ModuleGroup, Module
 from django.contrib import messages
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.decorators import login_required
+
+
 def home(request):
     module_groups = ModuleGroup.objects.all()
     modules = Module.objects.all()
@@ -9,6 +13,7 @@ def home(request):
         'module_groups': module_groups,
         'modules': modules,
     })
+
 
 def register(request):
     if request.method == 'POST':
@@ -24,6 +29,7 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
+
 def login_view(request):
     if request.method == 'POST':
         form = CustomLoginForm(request.POST)
@@ -32,10 +38,11 @@ def login_view(request):
             password = form.cleaned_data['password']
             try:
                 user = Registration.objects.get(username=username)
-                if user.password == password:
+                
+                if check_password(password, user.password):
                     request.session['user_id'] = user.id
                     request.session['username'] = user.username
-                    return redirect('main:home')
+                    return redirect('main:home')  
                 else:
                     messages.error(request, "Invalid username or password.")
             except Registration.DoesNotExist:
@@ -45,4 +52,3 @@ def login_view(request):
         form = CustomLoginForm()
 
     return render(request, 'login.html', {'form': form})
- 

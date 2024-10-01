@@ -41,6 +41,10 @@
             {{ course_form.created_by.label_tag }}
             {{ course_form.created_by|add_class:"form-control" }}
         </div>
+        <div class="form-group mb-3">
+            {{ course_form.course_picture_url.label_tag }}
+            {{ course_form.course_picture_url|add_class:"form-control" }} 
+        </div>
         <button type="submit" class="btn btn-primary">Save</button>
         <a href="{% url 'course:course_list' %}" class="btn btn-secondary">Back to Course List</a>
     </form>

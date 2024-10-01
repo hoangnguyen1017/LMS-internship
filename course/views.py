@@ -4,7 +4,7 @@ from .forms import CourseForm, UserCourseProgressForm
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models import Q
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def course_list(request):
     query = request.GET.get('q', '')
@@ -14,17 +14,35 @@ def course_list(request):
     users = User.objects.filter(course__isnull=False).distinct()  # Get users who have created courses
 
     # Apply search filters if provided
-    if query:
+    if query and created_by_filter:
+        courses = courses.filter(
+            Q(course_name__icontains=query),
+            created_by_id=created_by_filter
+        )
+    elif query: 
         courses = courses.filter(course_name__icontains=query)
-    
-    if created_by_filter:
+    elif created_by_filter: 
         courses = courses.filter(created_by_id=created_by_filter)
 
+    not_found = not courses.exists()
+
+    # Pagination
+    paginator = Paginator(courses, 5)  # Show 5 courses per page
+    page_number = request.GET.get('page', 1)
+
+    try:
+        courses_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        courses_page = paginator.page(1)
+    except EmptyPage:
+        courses_page = paginator.page(paginator.num_pages)
+
     return render(request, 'course_list.html', {
-        'courses': courses,
+        'courses': courses_page,  # Use paginated courses
         'query': query,
         'created_by_filter': created_by_filter,
-        'users': users  # Pass the list of users to the template
+        'users': users,  # Pass the list of users to the template
+        'not_found': not_found,  # Check if any courses were found
     })
 
 

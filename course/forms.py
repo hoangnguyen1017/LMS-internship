@@ -1,22 +1,23 @@
 from django import forms
 from .models import Course, UserCourseProgress
-from user.models import User  # Giả sử mô hình User nằm trong ứng dụng user
+from user.models import User  
 
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['course_name', 'course_description', 'created_by']
+        fields = ['course_name', 'course_description', 'created_by', 'course_picture_url']
         widgets = {
-            'created_by': forms.Select(),  # Hiển thị danh sách người dùng để chọn người tạo khóa học
+            'created_by': forms.Select(),
+            'course_picture_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter course picture URL'}),
         }
 
 class UserCourseProgressForm(forms.ModelForm):
-    user = forms.ModelChoiceField(queryset=User.objects.all(), label='User')  # Dropdown để chọn người dùng
-    course = forms.ModelChoiceField(queryset=Course.objects.all(), label='Course')  # Dropdown để chọn khóa học
+    user = forms.ModelChoiceField(queryset=User.objects.all(), label='User') 
+    course = forms.ModelChoiceField(queryset=Course.objects.all(), label='Course')  
 
     class Meta:
         model = UserCourseProgress
         fields = ['user', 'course', 'progress_percentage']
         widgets = {
-            'progress_percentage': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'max': '100'}),  # Hiển thị trường số với bước và phạm vi
+            'progress_percentage': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'max': '100'}),  
         }

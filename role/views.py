@@ -8,6 +8,17 @@ from django.http import HttpResponse
 import openpyxl
 
 # Role views
+from functools import wraps
+
+def login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@login_required
 def role_list(request):
     roles = Role.objects.all()  # Lấy danh sách các role
     module_groups = ModuleGroup.objects.all()

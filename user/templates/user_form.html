@@ -23,7 +23,17 @@
 
                 <div class="form-group mb-3">
                     {{ user_form.password.label_tag }}
-                    {{ user_form.password|add_class:"form-control" }} 
+                    {{ user_form.password|add_class:"form-control" }}
+                    <!-- Display password conditions -->
+                    <div id="password-conditions" class="mt-2">
+                        <ul class="list-unstyled">
+                            <li id="length-condition" class="text-danger">- Password must be at least 8 characters long.</li>
+                            <li id="uppercase-condition" class="text-danger">- Password must contain at least one uppercase letter.</li>
+                            <li id="lowercase-condition" class="text-danger">- Password must contain at least one lowercase letter.</li>
+                            <li id="number-condition" class="text-danger">- Password must contain at least one number.</li>
+                            <li id="special-condition" class="text-danger">- Password must contain at least one special character (@, $, !, %, *, ?, &).</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="form-group mb-3">
@@ -83,4 +93,65 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('{{ user_form.password.id_for_label }}');
+        const lengthCondition = document.getElementById('length-condition');
+        const uppercaseCondition = document.getElementById('uppercase-condition');
+        const lowercaseCondition = document.getElementById('lowercase-condition');
+        const numberCondition = document.getElementById('number-condition');
+        const specialCondition = document.getElementById('special-condition');
+
+        passwordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+
+            // Check length
+            if (password.length >= 8) {
+                lengthCondition.classList.remove('text-danger');
+                lengthCondition.classList.add('text-success');
+            } else {
+                lengthCondition.classList.remove('text-success');
+                lengthCondition.classList.add('text-danger');
+            }
+
+            // Check uppercase
+            if (/[A-Z]/.test(password)) {
+                uppercaseCondition.classList.remove('text-danger');
+                uppercaseCondition.classList.add('text-success');
+            } else {
+                uppercaseCondition.classList.remove('text-success');
+                uppercaseCondition.classList.add('text-danger');
+            }
+
+            // Check lowercase
+            if (/[a-z]/.test(password)) {
+                lowercaseCondition.classList.remove('text-danger');
+                lowercaseCondition.classList.add('text-success');
+            } else {
+                lowercaseCondition.classList.remove('text-success');
+                lowercaseCondition.classList.add('text-danger');
+            }
+
+            // Check number
+            if (/\d/.test(password)) {
+                numberCondition.classList.remove('text-danger');
+                numberCondition.classList.add('text-success');
+            } else {
+                numberCondition.classList.remove('text-success');
+                numberCondition.classList.add('text-danger');
+            }
+
+            // Check special character
+            if (/[@$!%*?&]/.test(password)) {
+                specialCondition.classList.remove('text-danger');
+                specialCondition.classList.add('text-success');
+            } else {
+                specialCondition.classList.remove('text-success');
+                specialCondition.classList.add('text-danger');
+            }
+        });
+    });
+</script>
+
 {% endblock %}

@@ -69,7 +69,17 @@ def save_personalization_data(user):
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
+from functools import wraps
 
+def login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@login_required
 def user_list(request):
     query = request.GET.get('q', '')
     selected_role = request.GET.get('role', '')
@@ -152,23 +162,37 @@ def user_edit(request, pk):
         'user_form': user_form,
         'profile_form': profile_form
     })
-
+from main.models import Registration
 def user_add(request):
     if request.method == 'POST':
         user_form = UserForm(request.POST)
         profile_form = UserProfileForm(request.POST)
 
         if user_form.is_valid() and profile_form.is_valid():
+            # Lưu thông tin người dùng vào bảng User
             user = user_form.save()
+
+            # Tạo và lưu thông tin người dùng vào bảng UserProfile
             profile = profile_form.save(commit=False)
             profile.user = user
 
-            interests = request.POST.getlist('interests') 
-            profile.interests = ', '.join(interests)  
+            # Lưu sở thích
+            interests = request.POST.getlist('interests')
+            profile.interests = ', '.join(interests)
             profile.save()
 
-            # Lưu dữ liệu cá nhân hóa
+            # Lưu dữ liệu cá nhân hóa nếu cần
             save_personalization_data(user)
+
+            # Lưu thông tin vào bảng Registration
+            registration = Registration(
+                username=user.username,
+                email=user.email,
+                password=user.password,
+                full_name=user.full_name
+            )
+            registration.save()  # Lưu vào bảng Registration
+
             messages.success(request, "Thêm người dùng thành công!")
             return redirect('user:user_list')
     else:

@@ -7,7 +7,17 @@ from module_group.models import ModuleGroup
 # def subject_list(request):
 #     subjects = Subject.objects.all()
 #     return render(request, 'subject_list.html', {'subjects': subjects})
+from functools import wraps
 
+def login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@login_required
 def subject_list(request):
     module_groups = ModuleGroup.objects.all()
    # modules = Module.objects.all()

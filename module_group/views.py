@@ -8,7 +8,17 @@ import openpyxl
 from django.db.models import Q
 
 # MODULE GROUP VIEWS
+from functools import wraps
 
+def login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+@login_required
 def module_group_list(request):
     module_groups = ModuleGroup.objects.all()
     form = ExcelImportForm()

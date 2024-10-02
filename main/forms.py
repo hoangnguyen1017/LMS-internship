@@ -47,21 +47,20 @@ from django.contrib.auth.hashers import check_password
 from .models import Registration
 
 class CustomLoginForm(forms.Form):
-    username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}))
+    username = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}))
+    full_name = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter full name'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}))
 
     def clean(self):
         cleaned_data = super().clean()
         username = cleaned_data.get("username")
+        full_name = cleaned_data.get("full_name")
         password = cleaned_data.get("password")
 
-        try:
-            user = Registration.objects.get(username=username)
-            if not check_password(password, user.password):
-                raise forms.ValidationError("Invalid username or password")
+        if not username and not full_name:
+            raise forms.ValidationError("You must provide either a username or a full name.")
 
-        except Registration.DoesNotExist:
-            raise forms.ValidationError("Invalid username or password")
-
-        cleaned_data['user'] = user
+        cleaned_data['username'] = username
+        cleaned_data['full_name'] = full_name
         return cleaned_data
+

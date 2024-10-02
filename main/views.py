@@ -49,14 +49,14 @@ def register(request):
 #     if request.method == 'POST':
 #         form = CustomLoginForm(request.POST)
 #         if form.is_valid():
-#             username = form.cleaned_data['username']
+#             full_name = form.cleaned_data['full_name']
 #             password = form.cleaned_data['password']
 #             try:
-#                 user = User.objects.get(username=username)
+#                 user = User.objects.get(full_name=full_name)
 
 #                 if check_password(password, user.password):
 #                     request.session['user_id'] = user.id
-#                     request.session['username'] = user.username
+#                     request.session['full_name'] = user.full_name
 #                     request.session['role_id'] = user.role.id  
 
 #                     if user.role.id == 2:  
@@ -66,7 +66,7 @@ def register(request):
 #                     else:
 #                         messages.error(request, "Invalid role.")
 #             except User.DoesNotExist:
-#                 messages.error(request, "Invalid username or password.")
+#                 messages.error(request, "Invalid full_name or password.")
     
 #     else:
 #         form = CustomLoginForm()
@@ -75,6 +75,7 @@ def register(request):
 
 
 def login_view(request):
+    # Kiểm tra nếu người dùng đã đăng nhập
     if request.session.get('user_id'):
         return redirect('main:home')  
 
@@ -82,16 +83,25 @@ def login_view(request):
         form = CustomLoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
+            full_name = form.cleaned_data['full_name']
             password = form.cleaned_data['password']
             try:
+                # Kiểm tra theo username trước
                 user = User.objects.get(username=username)
+                # Hoặc có thể kiểm tra theo full_name
+                if not user:  # nếu không tìm thấy user theo username, kiểm tra full_name
+                    user = User.objects.get(full_name=full_name)
 
+                # Kiểm tra mật khẩu
                 if check_password(password, user.password):
+                    # Lưu thông tin người dùng vào session
                     request.session['user_id'] = user.id
-                    request.session['username'] = user.username
+                    request.session['username'] = user.username  # Lưu username
+                    request.session['full_name'] = user.full_name
                     request.session['role_id'] = user.role.id  
+                    request.session['profile_picture_url'] = user.profile_picture_url  # Lưu URL hình ảnh
 
-                    # Redirect to home after login
+                    # Redirect đến trang chính sau khi đăng nhập
                     return redirect('main:home')  
             except User.DoesNotExist:
                 messages.error(request, "Invalid username or password.")
@@ -100,7 +110,6 @@ def login_view(request):
         form = CustomLoginForm()
 
     return render(request, 'login.html', {'form': form})
-
 
 
 

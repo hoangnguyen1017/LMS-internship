@@ -52,42 +52,44 @@
         </thead>
         <tbody>
             {% for user in users %}
-            <tr ondblclick="window.location.href='{% url 'user:user_detail' user.pk %}'" style="cursor: pointer;">
-                <td>{{ users.number|add:'-1'|multiply:5|add:forloop.counter }}</td> 
-
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.full_name }}</td>
-                
-                <td class="text-center">
-                    {% if user.profile_picture_url %}
-                    <img src="{{ user.profile_picture_url }}" alt="Profile Picture" width="170" height="170" class="img-fluid">
-                    {% else %}
-                        No image
-                    {% endif %}
-                </td>
-                {% if not is_user %}
-                    <td>{{ user.role.role_name }}</td>
-                    <td>{{ user.created_at|date:"Y-m-d H:i" }}</td> 
-                    <td>{{ user.updated_at|date:"Y-m-d H:i" }}</td> 
-                    <td>
+                {% if not is_user %}   
+                    <tr ondblclick="window.location.href='{% url 'user:user_detail' user.pk %}'" style="cursor: pointer;">
                 {% endif %}
-                    <div class="btn-group" role="group">
-                        {% if not is_user %}
-                            <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-bs-toggle="tooltip">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-bs-toggle="tooltip">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                    <td>{{ users.number|add:'-1'|multiply:5|add:forloop.counter }}</td> 
+
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.full_name }}</td>
+                    
+                    <td class="text-center">
+                        {% if user.profile_picture_url %}
+                        <img src="{{ user.profile_picture_url }}" alt="Profile Picture" width="170" height="170" class="img-fluid">
+                        {% else %}
+                            No image
                         {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9" class="text-center">No users found.</td>
-            </tr>
+                    </td>
+                    {% if not is_user %}
+                        <td>{{ user.role.role_name }}</td>
+                        <td>{{ user.created_at|date:"Y-m-d H:i" }}</td> 
+                        <td>{{ user.updated_at|date:"Y-m-d H:i" }}</td> 
+                        <td>
+                    {% endif %}
+                        <div class="btn-group" role="group">
+                            {% if not is_user %}
+                                <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-bs-toggle="tooltip">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-bs-toggle="tooltip">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No users found.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

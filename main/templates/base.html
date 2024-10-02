@@ -6,23 +6,64 @@
     <title>{% block title %}Learning Management System{% endblock %}</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
     {% block extra_css %}{% endblock %}
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        footer {
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .dropdown-menu {
+            border-radius: 0.5rem;
+        }
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <a class="navbar-brand" href="{% url 'main:home' %}">FSA</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-            </ul>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto"></ul>
             <ul class="navbar-nav ml-auto">
                 {% if request.session.user_id %}
-                    <li class="nav-item">
-                        <form action="{% url 'main:logout' %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="nav-link btn btn-link" style="display: inline; padding: 0; border: none; background: none;">
-                                Logout
-                            </button>
-                        </form>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {% if request.session.profile_picture_url %}
+                                <img src="{{ request.session.profile_picture_url }}" alt="Profile Picture" class="rounded-circle" width="30" height="30" style="margin-right: 5px;">
+                            {% endif %}
+                            {% if request.session.full_name %}
+                                {{ request.session.full_name }}
+                            {% else %}
+                                {{ request.session.username|default:"Guest" }}
+                            {% endif %}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{% url 'user:user_detail' request.session.user_id %}">Profile</a>
+                            <div class="dropdown-divider"></div>
+                            <form action="{% url 'main:logout' %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">Logout</button>
+                            </form>
+                        </div>
                     </li>
                 {% else %}
                     <li class="nav-item">
@@ -37,6 +78,10 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>&copy; {{ current_year }} FSA. All Rights Reserved.</p>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>

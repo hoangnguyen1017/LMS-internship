@@ -78,6 +78,30 @@ def login_required(view_func):
             return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+# def user_required(view_func):
+#     @wraps(view_func)
+#     def _wrapped_view(request, *args, **kwargs):
+#         if not request.session.get('user_id'):
+#             return redirect('main:login')  # Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+
+#         user_id = request.session.get('user_id')
+#         user = get_object_or_404(User, pk=user_id)  # Lấy thông tin người dùng từ session
+
+#         # Gán role_name vào session nếu chưa có
+#         if 'role_name' not in request.session:
+#             request.session['role_name'] = user.role.role_name
+
+#         # Kiểm tra nếu role không phải là "User"
+#         if user.role.role_name != 'User':
+#             return redirect('main:home')  # Chuyển hướng đến trang chủ nếu không phải user
+
+#         # Kiểm tra nếu là user
+#         request.is_user = user.role.role_name == 'User'  # Gán giá trị is_user vào request
+
+#         return view_func(request, *args, **kwargs)
+    
+#     return _wrapped_view
+
 
 @login_required
 def user_list(request):
@@ -86,15 +110,18 @@ def user_list(request):
 
     is_user = False  # Khởi tạo biến is_user mặc định là False
 
+    user_roles_with_user_functionality = ['User', 'Student', 'Partner']  # Danh sách các vai trò có cùng chức năng với User
+
     if request.session.get('user_id'):
         # Lấy thông tin người dùng từ session hoặc database
         user_id = request.session.get('user_id')
         user = get_object_or_404(User, pk=user_id)  # Lấy đối tượng User theo user_id
         request.session['role_name'] = user.role.role_name  # Giả sử user có thuộc tính role
 
-        is_user = user.role.role_name == 'User'  # Nếu là user
+        # Kiểm tra xem vai trò người dùng có nằm trong danh sách không
+        is_user = user.role.role_name in user_roles_with_user_functionality
 
-    users = User.objects.all()
+    users = User.objects.exclude(role__role_name='Admin')
     roles = Role.objects.all()
 
     # Tìm kiếm theo tên và vai trò

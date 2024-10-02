@@ -4,19 +4,20 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">User List</h2>
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center ">
         <div class="btn-group mt-3">
-            <a href="{% url 'user:user_add' %}" class="btn btn-primary me-2" title="Add New User" data-toggle="tooltip">
-                <i class="fas fa-plus"></i> Add User
-            </a>
-            <button class="btn btn-success me-2" title="Import Users from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
-                <i class="fas fa-file-import"></i> Import
-            </button>
-            <a href="{% url 'user:export_users' %}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
-                <i class="fas fa-file-export"></i> Export
-            </a>
+            {% if not is_user %}  <!-- Nếu không phải là user -->
+                <a href="{% url 'user:user_add' %}" class="btn btn-primary me-2" title="Add New User" data-toggle="tooltip">
+                    <i class="fas fa-plus"></i> Add User
+                </a>
+                <button class="btn btn-success me-2" title="Import Users from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
+                    <i class="fas fa-file-import"></i> Import
+                </button>
+                <a href="{% url 'user:export_users' %}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
+                    <i class="fas fa-file-export"></i> Export
+                </a>
+            {% endif %}
         </div>
-
         <!-- Search form -->
         <form method="GET" action="{% url 'user:user_list' %}" class="form-inline">
             <div class="input-group">
@@ -39,11 +40,14 @@
                 <th>Username</th>
                 <th>Email</th>
                 <th>Full Name</th>
-                <th>Role</th>
+                
                 <th class="text-center">Profile Picture</th>
-                <th>Created At</th>
-                <th>Updated At</th> 
-                <th>Actions</th>
+                {% if not is_user %}
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Updated At</th> 
+                    <th>Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -54,7 +58,7 @@
                 <td>{{ user.username }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.full_name }}</td>
-                <td>{{ user.role.role_name }}</td>
+                
                 <td class="text-center">
                     {% if user.profile_picture_url %}
                     <img src="{{ user.profile_picture_url }}" alt="Profile Picture" width="170" height="170" class="img-fluid">
@@ -62,16 +66,21 @@
                         No image
                     {% endif %}
                 </td>
-                <td>{{ user.created_at|date:"Y-m-d H:i" }}</td> 
-                <td>{{ user.updated_at|date:"Y-m-d H:i" }}</td> 
-                <td>
+                {% if not is_user %}
+                    <td>{{ user.role.role_name }}</td>
+                    <td>{{ user.created_at|date:"Y-m-d H:i" }}</td> 
+                    <td>{{ user.updated_at|date:"Y-m-d H:i" }}</td> 
+                    <td>
+                {% endif %}
                     <div class="btn-group" role="group">
-                        <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-bs-toggle="tooltip">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-bs-toggle="tooltip">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        {% if not is_user %}
+                            <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-bs-toggle="tooltip">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-bs-toggle="tooltip">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

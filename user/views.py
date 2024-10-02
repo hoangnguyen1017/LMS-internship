@@ -84,6 +84,16 @@ def user_list(request):
     query = request.GET.get('q', '')
     selected_role = request.GET.get('role', '')
 
+    is_user = False  # Khởi tạo biến is_user mặc định là False
+
+    if request.session.get('user_id'):
+        # Lấy thông tin người dùng từ session hoặc database
+        user_id = request.session.get('user_id')
+        user = get_object_or_404(User, pk=user_id)  # Lấy đối tượng User theo user_id
+        request.session['role_name'] = user.role.role_name  # Giả sử user có thuộc tính role
+
+        is_user = user.role.role_name == 'User'  # Nếu là user
+
     users = User.objects.all()
     roles = Role.objects.all()
 
@@ -119,6 +129,7 @@ def user_list(request):
         'roles': roles,
         'selected_role': selected_role,
         'not_found': not_found,
+        'is_user': is_user,  # Trả về giá trị is_user
     })
 
 def user_detail(request, pk):
@@ -304,3 +315,8 @@ def import_users(request):
         form = ExcelImportForm()
 
     return render(request, 'user_list.html', {'form': form})
+
+
+
+
+

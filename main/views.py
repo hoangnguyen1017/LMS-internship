@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.http import HttpResponse
 from functools import wraps
-
+from role.models import Role
+from user.models import User
 # Định nghĩa decorator
 def login_required(view_func):
     @wraps(view_func)
@@ -40,10 +41,42 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 
+# from user.models import User
+# def login_view(request):
+#     if request.session.get('user_id'):
+#         return redirect('main:home')  
+
+#     if request.method == 'POST':
+#         form = CustomLoginForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data['username']
+#             password = form.cleaned_data['password']
+#             try:
+#                 user = User.objects.get(username=username)
+
+#                 if check_password(password, user.password):
+#                     request.session['user_id'] = user.id
+#                     request.session['username'] = user.username
+#                     request.session['role_id'] = user.role.id  
+
+#                     if user.role.id == 2:  
+#                         return redirect('main:home')  
+#                     elif user.role.id == 4:  
+#                         return redirect('main:user_dashboard')  
+#                     else:
+#                         messages.error(request, "Invalid role.")
+#             except User.DoesNotExist:
+#                 messages.error(request, "Invalid username or password.")
+    
+#     else:
+#         form = CustomLoginForm()
+
+#     return render(request, 'login.html', {'form': form})
+
+
 def login_view(request):
-    # Kiểm tra xem người dùng đã đăng nhập hay chưa
     if request.session.get('user_id'):
-        return redirect('main:home')  # Chuyển hướng nếu đã đăng nhập
+        return redirect('main:home')  
 
     if request.method == 'POST':
         form = CustomLoginForm(request.POST)
@@ -51,24 +84,22 @@ def login_view(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             try:
-                user = Registration.objects.get(username=username)
-                
+                user = User.objects.get(username=username)
+
                 if check_password(password, user.password):
-                    # Lưu thông tin đăng nhập vào phiên
                     request.session['user_id'] = user.id
                     request.session['username'] = user.username
+                    request.session['role_id'] = user.role.id  
+
+                    # Redirect to home after login
                     return redirect('main:home')  
-                else:
-                    messages.error(request, "Invalid username or password.")
-            except Registration.DoesNotExist:
+            except User.DoesNotExist:
                 messages.error(request, "Invalid username or password.")
     
     else:
         form = CustomLoginForm()
 
     return render(request, 'login.html', {'form': form})
-
-
 
 
 

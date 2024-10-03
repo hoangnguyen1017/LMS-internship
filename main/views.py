@@ -1,7 +1,10 @@
+# views.py
 from django.shortcuts import render, redirect
-from .forms import RegistrationForm, CustomLoginForm, Registration
-from module_group.models import ModuleGroup, Module
+from .forms import RegistrationForm, CustomLoginForm
 from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from module_group.models import ModuleGroup, Module
+
 def home(request):
     module_groups = ModuleGroup.objects.all()
     modules = Module.objects.all()
@@ -26,23 +29,18 @@ def register(request):
 
 def login_view(request):
     if request.method == 'POST':
-        form = CustomLoginForm(request.POST)
+        form = CustomLoginForm(data=request.POST)  # Sửa chỗ này
         if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            try:
-                user = Registration.objects.get(username=username)
-                if user.password == password:
-                    request.session['user_id'] = user.id
-                    request.session['username'] = user.username
-                    return redirect('main:home')
-                else:
-                    messages.error(request, "Invalid username or password.")
-            except Registration.DoesNotExist:
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')  # Điều hướng về trang chính sau khi đăng nhập thành công
+            else:
                 messages.error(request, "Invalid username or password.")
-    
+        else:
+            messages.error(request, "Error in form data.")
     else:
         form = CustomLoginForm()
-
     return render(request, 'login.html', {'form': form})
- 

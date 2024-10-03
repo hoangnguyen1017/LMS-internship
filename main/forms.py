@@ -1,4 +1,7 @@
+# forms.py
 from django import forms
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate
 from .models import Registration
 
 class RegistrationForm(forms.ModelForm):
@@ -22,24 +25,23 @@ class RegistrationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.password = self.cleaned_data["password1"]  
+        user.password = make_password(self.cleaned_data["password1"])  # Mã hóa mật khẩu
         if commit:
             user.save()
         return user
-    
+
 class CustomLoginForm(forms.Form):
-    username = forms.CharField(max_length=100)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'}))
 
     def clean(self):
         cleaned_data = super().clean()
         username = cleaned_data.get("username")
         password = cleaned_data.get("password")
 
-        try:
-            user = Registration.objects.get(username=username, password=password)
-        except Registration.DoesNotExist:
-            raise forms.ValidationError("Invalid username or password")
+        if username and password:
+            user = authenticate(username=username, password=password)  # Sử dụng phương thức authenticate
+            if user is None:
+                raise forms.ValidationError("Invalid username or password")
 
-        cleaned_data['user'] = user
         return cleaned_data

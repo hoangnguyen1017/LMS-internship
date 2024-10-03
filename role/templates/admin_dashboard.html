@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Roles</h5>
+                    <p class="card-text">Add, edit, or delete roles in the system.</p>
+                    <a href="{% url 'role:role_list' %}" class="btn btn-primary">Manage Roles</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">User Management</h5>
+                    <p class="card-text">View and manage users in the system.</p>
+                    <a href="{% url 'user:user_list' %}" class="btn btn-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Reports</h5>
+                    <p class="card-text">View system reports and analytics.</p>
+                    <a href="{% url 'report:report_list' %}" class="btn btn-primary">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

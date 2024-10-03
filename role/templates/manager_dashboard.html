@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manager Dashboard</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Team Overview</h5>
+                    <p class="card-text">View team members and their progress.</p>
+                    <a href="{% url 'user:user_list' %}" class="btn btn-primary">View Team</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tasks</h5>
+                    <p class="card-text">Manage and assign tasks to team members.</p>
+                    <a href="{% url 'task:task_list' %}" class="btn btn-primary">Manage Tasks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

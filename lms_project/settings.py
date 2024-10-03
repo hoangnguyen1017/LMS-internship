@@ -126,20 +126,16 @@ WSGI_APPLICATION = 'lms_project.wsgi.application'
 #     }
 # }
 
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'hoang',
+        'NAME': 'nguyen',
         'USER': 'root',
-        'PASSWORD': '24635789asd',
+        'PASSWORD': 'Gianguyen44@@',
         'HOST': 'localhost',
         'PORT': '3306',
     },
 }
-
-
 
 # //Driver={ODBC Driver 18 for SQL Server};Server=tcp:hcmuafserver.database.windows.net,1433;Database=hcmuafdb;Uid=ngattt;Pwd={your_password_here};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;
 

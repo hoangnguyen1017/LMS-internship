@@ -41,38 +41,6 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 
-# from user.models import User
-# def login_view(request):
-#     if request.session.get('user_id'):
-#         return redirect('main:home')  
-
-#     if request.method == 'POST':
-#         form = CustomLoginForm(request.POST)
-#         if form.is_valid():
-#             full_name = form.cleaned_data['full_name']
-#             password = form.cleaned_data['password']
-#             try:
-#                 user = User.objects.get(full_name=full_name)
-
-#                 if check_password(password, user.password):
-#                     request.session['user_id'] = user.id
-#                     request.session['full_name'] = user.full_name
-#                     request.session['role_id'] = user.role.id  
-
-#                     if user.role.id == 2:  
-#                         return redirect('main:home')  
-#                     elif user.role.id == 4:  
-#                         return redirect('main:user_dashboard')  
-#                     else:
-#                         messages.error(request, "Invalid role.")
-#             except User.DoesNotExist:
-#                 messages.error(request, "Invalid full_name or password.")
-    
-#     else:
-#         form = CustomLoginForm()
-
-#     return render(request, 'login.html', {'form': form})
-
 
 def login_view(request):
     # Kiểm tra nếu người dùng đã đăng nhập

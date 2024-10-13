@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ question.question_text }}{% endblock %}
+
+{% block content %}
+<h2>{{ question.question_text }}</h2>
+<p><strong>Created At:</strong> {{ question.created_at }}</p>
+<p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+<!-- Hiển thị Subject -->
+<p><strong>Subject:</strong> 
+    {% if question.subject %}
+        {{ question.subject.name }}
+    {% else %}
+        No Subject
+    {% endif %}
+</p>
+
+<!-- Hiển thị Category -->
+<p><strong>Category:</strong> 
+    {% if question.category %}
+        {{ question.category.name }}
+    {% else %}
+        No Category
+    {% endif %}
+</p>
+<h3>Answers</h3>
+<ul class="list-group">
+    {% for answer in question.answers.all %}
+    <li class="list-group-item">
+        {{ answer.text }}{% if answer.is_correct %} <span class="badge badge-success">Correct</span>{% endif %}
+    </li>
+    {% empty %}
+    <li class="list-group-item">No answers yet.</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'question_list' %}" class="btn btn-secondary">Back to List</a>
+{% endblock %}

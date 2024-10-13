@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <h1 class="mb-4">Learning Management System</h1>
+    {% for group in module_groups %}
+    <div class="mb-5">
+        <h2 class="text-primary mb-3">{{ group.name }}</h2>  
+
+        <div class="row">
+            {% for module in modules %}
+                {% if module.module_group == group %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <!-- Module Icon -->
+                            <div class="icon mb-3">
+                                <i class="{{ module.icon }} fa-3x text-info"></i>
+                            </div>
+
+                            <!-- Module Name -->
+                            <h5 class="card-title">{{ module.module_name }}</h5>
+
+                            <!-- Module Button -->
+                            {% if user.is_authenticated %}
+                                <a href="{% url module.module_url %}" class="btn btn-primary mt-3"> 
+                                    Explore {{ module.module_name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Please <a href="{% url 'main:login' %}">log in</a> to access this module.</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ quiz.title }}</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">{{ quiz.description }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ quiz.created_at }}</p>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'quiz_list' %}" class="btn btn-primary">Back to Quiz List</a>
+    </div>
+</div>
+{% endblock %}

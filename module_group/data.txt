@@ -1,0 +1,21 @@
+-- Insert data into module_group
+truncate table user_module_usermodule CASCADE;
+truncate table module_group_module CASCADE;
+truncate table module_group_modulegroup CASCADE;
+
+INSERT INTO module_group_modulegroup (id, group_name) VALUES
+(1, 'Training Management'),
+(2, 'User Management'),
+(3, 'Assessment Management');
+
+-- Insert data into module with icons and URL pattern names
+INSERT INTO module_group_module (id, module_name, module_url, icon, module_group_id) VALUES
+(1, 'Subject', 'subject:subject_list', 'fas fa-book', 1),
+(2, 'Category', 'category:category_list', 'fas fa-tags', 1),
+(3, 'Training Program', 'training_program:training_program_list', 'fas fa-calendar-alt', 1),
+(4, 'User', 'user:user_list', 'fas fa-user', 2),
+(5, 'Role', 'role:role_list', 'fas fa-briefcase', 2),
+(6, 'Module', 'module_group:module_list', 'fas fa-cogs', 2),
+(7, 'Module Group', 'module_group:module_group_list', 'fas fa-folder', 2),
+(8, 'User Module', 'user_module:user_module_list', 'fas fa-user-tag', 2),
+(9, 'Quiz', 'question:question_list', 'fas fa-user-tag', 3);

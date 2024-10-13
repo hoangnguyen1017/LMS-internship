@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">{{ book.title }}</h1>
+    <dl class="row">
+        <dt class="col-sm-3">Author:</dt>
+        <dd class="col-sm-9">{{ book.author.name }}</dd>
+        
+        <dt class="col-sm-3">Genre:</dt>
+        <dd class="col-sm-9">{{ book.genre }}</dd>
+        
+        <dt class="col-sm-3">Publication Date:</dt>
+        <dd class="col-sm-9">{{ book.publication_date }}</dd>
+    </dl>
+    <a href="{% url 'book_list' %}" class="btn btn-secondary">Back to List</a>
+</div>
+{% endblock %}

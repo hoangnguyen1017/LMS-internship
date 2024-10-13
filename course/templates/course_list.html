@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Course List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Course List</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="btn-group mt-3">
+            <a href="{% url 'course:course_add' %}" class="btn btn-primary mb-3">Add New Course</a>
+        </div>
+
+        <!-- Search form -->
+        <form method="GET" action="{% url 'course:course_list' %}" class="form-inline">
+            <div class="input-group">
+                <input type="text" name="q" value="{{ query|default_if_none:'' }}" class="form-control" placeholder="Search course..." aria-label="Search course">
+                <select name="created_by" class="form-control ms-2">
+                    <option value="">Select Created by</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}" {% if user.id|stringformat:"s" == created_by_filter %}selected{% endif %}>
+                            {{ user.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn btn-outline-success ms-2">Search</button>
+            </div>
+        </form>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+
+                <th>#</th>
+                <th>Course Name</th>
+                <th>Description</th>
+                <th class="text-center">Course Picture</th>
+
+                <th>Created By</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            {% if request.user.is_authenticated %}
+                {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
+                    <tr ondblclick="window.location.href='{% url 'course:course_detail' course.pk %}'" style="cursor: pointer;">
+                {% endif %}
+            {% endif %}
+                <td>{{ courses.number|add:'-1'|multiply:5|add:forloop.counter }}</td>
+                <td>{{ course.course_name }}</td>
+                <td>{{ course.course_description }}</td>
+                <td class="text-center">
+                    {% if course.course_picture_url %}
+                    <img src="{{ course.course_picture_url }}" alt="Course Picture" width="170" height="170" class="img-fluid">
+                    {% else %}
+                        No image
+                    {% endif %}
+                </td>
+                <td>{{ course.created_by.username }}</td>
+                <td>{{ course.created_at|date:"Y-m-d H:i" }}</td>
+                <td>{{ course.updated_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'course:course_edit' course.pk %}" class="btn btn-warning btn-sm" title="Edit Course" data-bs-toggle="tooltip">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'course:course_delete' course.pk %}" class="btn btn-danger btn-sm" title="Delete Course" data-bs-toggle="tooltip">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">No courses found.</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if courses.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if created_by_filter %}&created_by={{ created_by_filter }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ courses.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if created_by_filter %}&created_by={{ created_by_filter }}{% endif %}">&laquo; Previous</a>
+                    </li>
+                {% endif %}
+                {% for num in courses.paginator.page_range %}
+                    {% if courses.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > courses.number|add:'-3' and num < courses.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if created_by_filter %}&created_by={{ created_by_filter }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if courses.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ courses.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if created_by_filter %}&created_by={{ created_by_filter }}{% endif %}">Next &raquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ courses.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if created_by_filter %}&created_by={{ created_by_filter }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+</div>
+{% endblock %}

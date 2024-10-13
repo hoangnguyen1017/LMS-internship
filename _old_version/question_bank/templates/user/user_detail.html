@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }} Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>User Details</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Full Name:</strong> {{ user.full_name }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+    <a href="{% url 'user_list' %}" class="btn btn-primary">Back to User List</a>
+</div>
+{% endblock %}

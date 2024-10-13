@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+
+{% block title %}Book Form{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Book Form</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Title</label>
+            {{ form.title|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.author.id_for_label }}">Author</label>
+            {{ form.author|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.genre.id_for_label }}">Genre</label>
+            {{ form.genre|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.publication_date.id_for_label }}">Publication Date</label>
+            {{ form.publication_date|add_class:"form-control" }}
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

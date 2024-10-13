@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Author Detail{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ author.name }}</h1>
+<p>{{ author.biography }}</p>
+<a href="{% url 'authors_list' %}" class="btn btn-secondary">Back to Author List</a>
+{% endblock %}

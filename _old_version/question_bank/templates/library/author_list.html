@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Authors{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Authors</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Biography</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for author in authors %}
+        <tr>
+            <td>{{ author.name }}</td>
+            <td>{{ author.biography }}</td>
+            <td>
+                <a href="{% url 'author_detail' author.id %}" class="btn btn-info btn-sm">View</a>
+                <a href="{% url 'author_edit' author.id %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'author_delete' author.id %}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'author_add' %}" class="btn btn-primary">Add Author</a>
+{% endblock %}

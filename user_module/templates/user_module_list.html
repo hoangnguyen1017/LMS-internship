@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>User Modules</h2>
+    
+    <a href="{% url 'user_module:user_module_create' %}" class="btn btn-primary mb-3">Assign New Module</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Module</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_module in user_modules %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ user_module.user.username }}</td>
+                <td>{{ user_module.module.module_name }}</td>
+                <td>
+                    <a href="{% url 'user_module:user_module_edit' user_module.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'user_module:user_module_delete' user_module.id %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No user modules assigned.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

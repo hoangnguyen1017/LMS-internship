@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Category Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Category: {{ category.name }}</h2>
+    <p>Here you can display more details about this category.</p>
+    
+    <a href="{% url 'question_list' %}" class="btn btn-primary">Back to Question List</a>
+</div>
+{% endblock %}

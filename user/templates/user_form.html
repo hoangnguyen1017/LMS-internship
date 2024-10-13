@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+{% block title %}{{ form.instance.pk|yesno:"Edit User, Add New User" }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ form.instance.pk|yesno:"Edit User, Add New User" }}</h2>
+    
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <strong>Invalid form</strong>
+            <ul class="errorlist">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            {{ form.username.label_tag }}
+            {{ form.username|add_class:"form-control" }}
+            {% if form.username.errors %}
+                <ul class="errorlist">
+                    {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name|add_class:"form-control" }}
+            {% if form.first_name.errors %}
+                <ul class="errorlist">
+                    {% for error in form.first_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name|add_class:"form-control" }}
+            {% if form.last_name.errors %}
+                <ul class="errorlist">
+                    {% for error in form.last_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email|add_class:"form-control" }}
+            {% if form.email.errors %}
+                <ul class="errorlist">
+                    {% for error in form.email.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password1.label_tag }}
+            {{ form.password1|add_class:"form-control" }}
+            {% if form.password1.errors %}
+                <ul class="errorlist">
+                    {% for error in form.password1.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.password2.label_tag }}
+            {{ form.password2|add_class:"form-control" }}
+            {% if form.password2.errors %}
+                <ul class="errorlist">
+                    {% for error in form.password2.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {% if request.user.is_authenticated %}
+            {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
+                <div class="form-group">
+                    {{ form.role.label_tag }}
+                    {{ form.role|add_class:"form-control" }}
+                    {% if form.role.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.role.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+        {% if request.user.is_authenticated %}
+            {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
+                <div class="form-group">
+                    {{ form.student_code.label_tag }}
+                    {{ form.student_code|add_class:"form-control" }}
+                    {% if form.student_code.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.student_code.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}      
+        <div class="form-group">
+            <label for="id_profile_picture_url">Profile Picture URL:</label>
+            <input type="url" name="profile_picture_url" id="id_profile_picture_url" class="form-control" placeholder="Enter profile picture URL" value="{{ form.profile_picture_url.value }}">
+            {% if form.profile_picture_url.value %}
+                <small class="form-text text-muted">Current: <a href="{{ form.profile_picture_url.value }}" target="_blank">{{ form.profile_picture_url.value }}</a></small>
+            {% endif %}
+            {% if form.profile_picture_url.errors %}
+                <ul class="errorlist">
+                    {% for error in form.profile_picture_url.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.bio.label_tag }}
+            {{ form.bio|add_class:"form-control" }}
+            {% if form.bio.errors %}
+                <ul class="errorlist">
+                    {% for error in form.bio.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.interests.label_tag }}
+            {{ form.interests|add_class:"form-control" }}
+            {% if form.interests.errors %}
+                <ul class="errorlist">
+                    {% for error in form.interests.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.learning_style.label_tag }}
+            {{ form.learning_style|add_class:"form-control" }}
+            {% if form.learning_style.errors %}
+                <ul class="errorlist">
+                    {% for error in form.learning_style.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.preferred_language.label_tag }}
+            {{ form.preferred_language|add_class:"form-control" }}
+            {% if form.preferred_language.errors %}
+                <ul class="errorlist">
+                    {% for error in form.preferred_language.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">{{ form.instance.pk|yesno:"Update, Create" }}</button>
+    </form>
+    
+    <div class="text-center mt-3">
+        <a href="{% url 'user:user_list' %}" class="btn btn-outline-dark btn-lg rounded-pill shadow-sm">
+            <i class="fas fa-arrow-left"></i> Back to User List
+        </a>
+    </div>
+
+</div>
+{% endblock %}

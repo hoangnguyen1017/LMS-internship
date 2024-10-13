@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="bg-dark text-white p-3 rounded text-center">
+                <p><strong>Profile Picture</strong></p>
+                <div class="avatar-wrapper position-relative mb-3">
+                    {% if user.profile.profile_picture_url %}
+                        <img src="{{ user.profile.profile_picture_url }}" alt="{{ user.username }}'s Profile Picture" class="img-fluid rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <span class="text-muted">No Image</span>
+                    {% endif %}
+                </div>
+                <h4 class="mb-4">{{ user.username }}</h4>
+                <ul class="list-group">
+                    <li class="list-group-item bg-dark"><a href="#" class="text-white" onclick="highlightCard('userIdCard')">User ID</a></li>
+                    <li class="list-group-item bg-dark"><a href="#" class="text-white" onclick="highlightCard('profileCard')">Profile Information</a></li>
+                    <li class="list-group-item bg-dark"><a href="#" class="text-white" onclick="highlightCard('CourseCard')">Course</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Profile Info -->
+        <div class="col-md-9">
+            <div class="p-3">
+                <!-- Bảng 1: User ID -->
+                <div class="card mb-4" id="userIdCard">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">User ID</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>ID:</strong>
+                                {% if request.user.is_authenticated %}
+                                    {% if is_student %}
+                                        {{ student_code|default:"N/A" }} 
+                                    {% else %}
+                                        {{ user.id }}  
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>  
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Full Name:</strong> <span class="text-dark">{{ user.first_name }} {{ user.last_name }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng 2: Profile -->
+                <div class="card mb-4" id="profileCard">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6"><strong>Bio:</strong> {{ user.profile.bio|default:"N/A" }}</div>
+                            <div class="col-6"><strong>Role:</strong> {{ user.profile.role.role_name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6"><strong>Interests:</strong> {{ user.profile.interests|default:"N/A" }}</div>
+                            <div class="col-6"><strong>Learning Style:</strong> {{ user.profile.learning_style|default:"N/A" }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng 3: Course -->
+                <div class="card mb-4" id="CourseCard">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Course</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if courses_with_progress %}
+                            <ul class="list-group">
+                                {% for item in courses_with_progress %}
+                                    <li class="list-group-item">
+                                        <strong>{{ item.course.course_name }}</strong> - 
+                                        Progress: {{ item.progress_percentage }}%
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No courses enrolled.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Edit Password Button -->
+                <div class="text-start mt-4">
+                    <a href="#" class="btn btn-warning btn-sm" title="Edit User" onclick="togglePasswordForm(event)">
+                        <i class="fas fa-edit"></i> Edit Password
+                    </a>
+                </div>
+
+
+
+
+                <!-- Password Form -->
+                <div class="row mb-4" id="password-form" style="display: none;">
+                    <div class="col-md-12">
+                        <form method="POST" action="{% url 'user:user_edit_password' user.pk %}" class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="old_password" name="old_password" placeholder="Old Password" required>
+                                <button type="submit" class="btn btn-warning">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <div class="text-center">
+                    <a href="{% url 'main:home' %}" class="btn btn-outline-primary rounded-pill">
+                        <i class="fas fa-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-wrapper {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    .bg-dark {
+        background-color: #343a40 !important;
+    }
+    .btn-outline-primary {
+        color: #007bff;
+        border: 2px solid #007bff;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+    /* Lớp hiệu ứng nâng lên */
+    .highlight {
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 15px rgba(255, 204, 0, 0.5); /* Hiệu ứng bóng */
+    }
+</style>
+
+<script>
+    function togglePasswordForm(event) {
+        event.preventDefault();
+        var form = document.getElementById('password-form');
+        form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
+    }
+
+    function highlightCard(cardId) {
+        // Xóa lớp highlight khỏi tất cả các thẻ card
+        var cards = document.querySelectorAll('.card');
+        cards.forEach(function(card) {
+            card.classList.remove('highlight');
+        });
+
+        // Thêm lớp highlight vào thẻ card được chọn
+        var selectedCard = document.getElementById(cardId);
+        selectedCard.classList.add('highlight');
+    }
+</script>
+
+{% endblock %}

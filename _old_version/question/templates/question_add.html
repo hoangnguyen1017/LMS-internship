@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h2>Add Questions</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Question Form -->
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            {{ question_form.subject|as_crispy_field }}
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            {{ question_form.category|as_crispy_field }}
+        </div>
+        <div class="form-group">
+            <label for="question_text">Question</label>
+            {{ question_form.question_text|as_crispy_field }}
+        </div>
+
+        <!-- Answer Formset -->
+        <h4>Answers</h4>
+        <div id="answers-formset">
+            <div class="answer-group form-group">
+                <label for="answer_text">Answer</label>
+                <input type="text" name="answer_text[]" class="form-control" placeholder="Enter answer text" required>
+                <label for="is_correct">Correct</label>
+                <input type="checkbox" name="is_correct[]" value="True" class="form-check-input">
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary add-answer">Add Answer</button>
+        <hr>
+
+        <button type="submit" class="btn btn-success">Save Questions</button>
+    </form>
+</div>
+
+<script>
+    document.querySelector('.add-answer').addEventListener('click', function() {
+        var formset = document.getElementById('answers-formset');
+        
+        var newAnswerGroup = `
+            <div class="answer-group form-group">
+                <label for="answer_text">Answer</label>
+                <input type="text" name="answer_text[]" class="form-control" placeholder="Enter answer text" required>
+                <label for="is_correct">Correct</label>
+                <input type="checkbox" name="is_correct[]" value="True" class="form-check-input">
+            </div>
+        `;
+        
+        // Append the new answer fields to the answers formset
+        formset.insertAdjacentHTML('beforeend', newAnswerGroup);
+    });
+</script>
+{% endblock %}

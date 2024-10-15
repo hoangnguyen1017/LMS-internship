@@ -2,13 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
-from .models import User, Profile
+from .models import User, Profile, Role
 from .forms import UserForm, UserEditForm
 from .widgets import PasswordWidget
-
-from .models import User, Profile 
-from import_export import resources
-from import_export.admin import ImportExportModelAdmin
 
 class UserProfileResource(resources.ModelResource):
     class Meta:
@@ -26,6 +22,46 @@ class UserProfileResource(resources.ModelResource):
             'profile__learning_style',
             'profile__preferred_language',
         )
+
+    def after_import(self, dataset, result, **kwargs):
+        for row in dataset.dict:
+            user_id = row.get('id')
+            
+            # Kiểm tra xem user_id có hợp lệ hay không
+            if not user_id:
+                continue  # Bỏ qua nếu user_id không tồn tại trong dòng
+            
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                print(f"User with ID {user_id} does not exist. Skipping this entry.")
+                continue  # Bỏ qua nếu không tìm thấy người dùng
+
+            # Kiểm tra xem người dùng có phải là superuser không
+            if user.is_superuser:
+                continue  # Bỏ qua người dùng là superuser
+
+            # Lấy hoặc tạo Role
+            role_name = row.get('profile__role__role_name')
+            if not role_name:
+                role_name = "N/A"  # Gán "N/A" nếu không có role_name
+
+            # Lấy hoặc tạo Role với role_name là "N/A"
+            role, created = Role.objects.get_or_create(role_name=role_name)
+
+            # Tạo thông tin cho Profile
+            profile_data = {
+                'role': role,  # Gán đối tượng Role
+                'profile_picture_url': row.get('profile__profile_picture_url'),
+                'bio': row.get('profile__bio'),
+                'interests': row.get('profile__interests'),
+                'learning_style': row.get('profile__learning_style'),
+                'preferred_language': row.get('profile__preferred_language'),
+            }
+
+            # Lấy hoặc tạo Profile
+            profile, created = Profile.objects.get_or_create(user=user, defaults=profile_data)
+
 
 class ProfileInline(admin.StackedInline):
     model = Profile
@@ -67,8 +103,6 @@ if User in admin.site._registry:
 
 admin.site.register(User, CustomUserAdmin)
 
-
-
 from import_export import resources
 from .models import Student
 
@@ -77,11 +111,6 @@ class StudentResource(resources.ModelResource):
         model = Student
         fields = ('id', 'student_code', 'user__username', 'user__first_name', 'user__last_name', 'user__email', 'enrolled_courses')
         export_order = ('id', 'student_code', 'user__username', 'user__first_name', 'user__last_name', 'user__email', 'enrolled_courses')
-
-class ProfileInline(admin.StackedInline):
-    model = Profile
-    can_delete = True
-    verbose_name_plural = 'Profile'
 
 class StudentAdmin(ImportExportModelAdmin):
     resource_class = StudentResource
@@ -92,6 +121,5 @@ class StudentAdmin(ImportExportModelAdmin):
     def enrolled_courses_display(self, obj):
         return ", ".join(course.course_name for course in obj.enrolled_courses.all())  
     enrolled_courses_display.short_description = 'Enrolled Courses'
-
 
 admin.site.register(Student, StudentAdmin)

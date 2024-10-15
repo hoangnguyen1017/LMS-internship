@@ -17,6 +17,16 @@ class Role(models.Model):
         verbose_name='modules',
         related_name='role_modules',
     )
+    class Meta:
+        default_permissions = () 
+        permissions = [
+            ('can_delete_user', 'Can delete user'),  # Thêm quyền xóa người dùng
+            ('can_add_user', 'Can add user'),
+            ('can_edit_user', 'Can edit user'),
+            ('can_export_users', 'Can export users'),
+            ('can_import_users', 'Can import users'),
+            ('can_detail_user','Can detail user')
+        ]
 
     def __str__(self):
         return self.role_name

@@ -9,23 +9,24 @@
     <div class="mt-3">
         <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group mt-3">
-                {% if request.user.is_authenticated %}
-                    {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
-                        <a href="{% url 'user:user_add' %}" class="btn btn-primary" title="Add New User">
-                            <i class="fas fa-plus"></i> Add User
-                        </a>
-                        <button class="btn btn-success" title="Import Users from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
-                            <i class="fas fa-file-import"></i> Import
-                        </button>
-                        <a href="{% url 'user:export_users' %}?role={{ selected_role }}&q={{ query }}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
-                            <i class="fas fa-file-export"></i> Export
-                        </a>
-                        <a href="{% url 'user:student_list' %}" class="btn btn-info" title="View Student List">
-                            <i class="fas fa-users"></i> Student List
-                        </a>
-                    {% endif %}
+                {% if request.user.is_authenticated and can_add_user %}
+                    <a href="{% url 'user:user_add' %}" class="btn btn-primary" title="Add New User">
+                        <i class="fas fa-plus"></i> Add User
+                    </a>
                 {% endif %}
-                <!-- Add Refresh Button -->
+                {% if request.user.is_authenticated and can_import_users %}
+                    <button class="btn btn-success" title="Import Users from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
+                        <i class="fas fa-file-import"></i> Import
+                    </button>
+                {% endif %}
+                {% if request.user.is_authenticated and can_export_users %}
+                    <a href="{% url 'user:export_users' %}?role={{ selected_role }}&q={{ query }}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
+                        <i class="fas fa-file-export"></i> Export
+                    </a>
+                {% endif %}
+                <a href="{% url 'user:student_list' %}" class="btn btn-info" title="View Student List">
+                    <i class="fas fa-users"></i> Student List
+                </a>
                 <a href="{% url 'user:user_list' %}" class="btn btn-secondary" title="Refresh User List">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </a>
@@ -33,14 +34,12 @@
             <form method="GET" action="{% url 'user:user_list' %}" class="form-inline">
                 <div class="input-group">
                     <input type="text" name="q" value="{{ query|default_if_none:'' }}" class="form-control" placeholder="Search users..." aria-label="Search users">
-                    {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
-                        <select name="role" class="form-control ms-2">
-                            <option value="">Select Role</option>
-                            {% for role in roles %}
-                                <option value="{{ role.role_name }}" {% if role.role_name == selected_role %}selected{% endif %}>{{ role.role_name }}</option>
-                            {% endfor %}
-                        </select>
-                    {% endif %}
+                    <select name="role" class="form-control ms-2">
+                        <option value="">Select Role</option>
+                        {% for role in roles %}
+                            <option value="{{ role.role_name }}" {% if role.role_name == selected_role %}selected{% endif %}>{{ role.role_name }}</option>
+                        {% endfor %}
+                    </select>
                     <button type="submit" class="btn btn-outline-success ms-2">Search</button>
                 </div>
             </form>  
@@ -80,22 +79,21 @@
                         {% endif %}
                     </td>
                     <td>
-                    {% comment %} {% if request.user.is_authenticated %}
-                        {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %} {% endcomment %}
-                    <a href="{% url 'user:user_detail' user.pk %}" class="btn btn-info btn-sm" title="View User Details" data-toggle="tooltip">
-                        <i class="fas fa-info-circle"></i>
-                    </a>
-                    <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-toggle="tooltip">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="{% url 'user:assign_training_programs' user.pk %}" class="btn btn-primary btn-sm" title="Assign Training Programs">
-                        <i class="fas fa-plus"></i>
-                    </a>
-                    <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-toggle="tooltip" onclick="return confirm('Are you sure you want to delete this user?');">
-                        <i class="fas fa-trash-alt"></i>
-                    </a>
-                        {% comment %} {% endif %}
-                    {% endif %} {% endcomment %}
+                        {% if request.user.is_authenticated and can_detail_user %}
+                            <a href="{% url 'user:user_detail' user.pk %}" class="btn btn-info btn-sm" title="View User Details" data-toggle="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                        {% endif %}
+                        {% if request.user.is_authenticated and can_edit_user %}
+                            <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning btn-sm" title="Edit User" data-toggle="tooltip">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        {% endif %}
+                        {% if request.user.is_authenticated and can_delete_user %}
+                            <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger btn-sm" title="Delete User" data-toggle="tooltip" onclick="return confirm('Are you sure you want to delete this user?');">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -147,32 +145,19 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <div class="modal-body">
-                        <form method="post" enctype="multipart/form-data" action="{% url 'user:import_users' %}">
-                            {% csrf_token %}
-                            <div class="mb-4">
-                                <span>Please download and use the <a href="{% static 'excel/import_users.xlsx' %}" target="_blank">Excel template</a>. The Excel file must contain exactly one sheet with the required columns.</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="id_excel_file">Upload Excel File:</label>
-                                <input type="file" name="excel_file" class="form-control" id="id_excel_file" required>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Upload</button>
-                            </div>
-                        </form>
-                    </div>
+                    <form method="POST" enctype="multipart/form-data" action="{% url 'user:import_users' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            {{ form.as_p }}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Import</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-</script>
-
 {% endblock %}

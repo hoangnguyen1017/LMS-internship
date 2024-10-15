@@ -15,6 +15,11 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django import forms
 from course.forms import UserCourseProgress
+from django.core.exceptions import PermissionDenied
+from django.contrib import messages
+
+
+
 @login_required
 def assign_training_programs(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -29,15 +34,33 @@ def assign_training_programs(request, user_id):
         form = AssignTrainingProgramForm(instance=user)
 
     return render(request, 'assign_training_programs.html', {'user': user, 'form': form})
-
 @login_required
 def user_list(request):
+    is_superuser = request.user.is_superuser
+    
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền .")
+        return redirect('user:user_list')
+
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    # Kiểm tra quyền 'can_add_user'
+    can_detail_user = 'can_detail_user' in user_role_permissions or is_superuser
+    can_add_user = 'can_add_user' in user_role_permissions or is_superuser
+    can_edit_user = 'can_edit_user' in user_role_permissions or is_superuser
+    can_delete_user = 'can_delete_user' in user_role_permissions or is_superuser
+    can_import_users = 'can_import_users' in user_role_permissions or is_superuser
+    can_export_users = 'can_export_users' in user_role_permissions or is_superuser
+    # Lấy các thông tin tìm kiếm từ request
     query = request.GET.get('q', '')
     selected_role = request.GET.get('role', '')
+
+    # Lấy danh sách người dùng, không bao gồm superuser
     users = User.objects.exclude(is_superuser=True)
     roles = Role.objects.all()
     form = ExcelImportForm()
 
+    # Lọc người dùng dựa trên truy vấn tìm kiếm
     if query and selected_role:
         users = users.filter(
             Q(username__icontains=query),
@@ -49,9 +72,9 @@ def user_list(request):
         users = users.filter(profile__role__role_name=selected_role)
 
     not_found = not users.exists()
-
     users = users.order_by('username')
 
+    # Phân trang
     paginator = Paginator(users, 5)
     page = request.GET.get('page', 1)
 
@@ -62,15 +85,21 @@ def user_list(request):
     except EmptyPage:
         users = paginator.page(paginator.num_pages)
 
+    # Truyền các biến vào context
     return render(request, 'user_list.html', {
-        'users': users,
-        'query': query,
-        'roles': roles,
-        'selected_role': selected_role,
-        'not_found': not_found,
-        'form': form,
-    })
-
+    'users': users,
+    'query': query,
+    'roles': roles,
+    'selected_role': selected_role,
+    'not_found': not_found,
+    'form': form,
+    'can_detail_user':can_detail_user,
+    'can_add_user': can_add_user,
+    'can_edit_user': can_edit_user,
+    'can_delete_user': can_delete_user,
+    'can_import_users': can_import_users,  # Sửa ở đây
+    'can_export_users': can_export_users,  # Sửa ở đây
+})
 @login_required
 def student_list(request):
     query = request.GET.get('q', '')
@@ -102,8 +131,17 @@ def student_list(request):
 
 @login_required
 def user_detail(request, pk):
+    is_superuser = request.user.is_superuser
     user = get_object_or_404(User, pk=pk)
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền.")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
+    
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
 
+    if 'can_detail_user' not in user_role_permissions and not is_superuser:
+        messages.error(request, "Bạn không có quyền .")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
     course_progress = UserCourseProgress.objects.filter(user=user)
 
     courses_with_progress = [
@@ -137,6 +175,17 @@ def user_detail(request, pk):
 def user_add(request):
     is_superuser = request.user.is_superuser
 
+    # Kiểm tra xem người dùng có quyền 'can_add_user' không
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền .")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
+    
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    if 'can_add_user' not in user_role_permissions and not is_superuser:
+        messages.error(request, "Bạn không có quyền .")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
+
     if request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
@@ -168,22 +217,32 @@ def user_add(request):
             if training_programs:
                 user.training_programs.set(training_programs)
 
+            messages.success(request, "Người dùng đã được thêm thành công!")
             return redirect('user:user_list')
         else:
             print('Invalid form')
             print(form.errors)
     else:
         form = UserForm()
-    
+
     return render(request, 'user_form.html', {'form': form, 'is_superuser': is_superuser})
+
 
 
 @login_required
 def user_edit(request, pk):
     user = get_object_or_404(User, pk=pk)
 
-    if request.user.pk != user.pk and not (request.user.is_superuser or 
-        (hasattr(request.user, 'profile') and request.user.profile.role and request.user.profile.role.role_name == 'Manager')):
+    # Kiểm tra xem người dùng hiện tại có profile không
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền chỉnh sửa người dùng.")
+        return redirect('user:user_list')
+
+    # Lấy danh sách quyền của người dùng hiện tại
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    # Kiểm tra quyền chỉnh sửa người dùng
+    if 'can_edit_user' not in user_role_permissions and request.user.pk != user.pk and not request.user.is_superuser:
         messages.error(request, "Bạn không có quyền chỉnh sửa người dùng này.")
         return redirect('user:user_list')
 
@@ -255,14 +314,17 @@ def user_edit(request, pk):
     else:
         form = UserForm(instance=user)
 
+    # Thiết lập giá trị khởi tạo cho các trường
     form.fields['bio'].initial = profile.bio
     form.fields['interests'].initial = profile.interests
     form.fields['learning_style'].initial = profile.learning_style
     form.fields['preferred_language'].initial = profile.preferred_language
     form.fields['profile_picture_url'].initial = profile.profile_picture_url
     form.fields['role'].initial = profile.role
-    if hasattr(request.user, 'profile') and request.user.profile.role and request.user.profile.role.role_name == 'User':
-        form.fields['role'].widget.attrs['disabled'] = True
+
+    # Nếu người dùng là 'User', vô hiệu hóa trường 'role'
+    # if hasattr(request.user, 'profile') and request.user.profile.role and request.user.profile.role.role_name == 'User':
+    #     form.fields['role'].widget.attrs['disabled'] = True
 
     if profile.role.role_name == 'Student':
         form.fields['student_code'].initial = student_code
@@ -275,78 +337,74 @@ def user_edit(request, pk):
 @login_required
 def user_delete(request, pk):
     user = get_object_or_404(User, pk=pk)
-    
+
+    # Kiểm tra xem người dùng có profile không
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền xóa người dùng.")
+        return redirect('user:user_list')
+
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    # Kiểm tra quyền xóa người dùng
+    if 'can_delete_user' not in user_role_permissions and not request.user.is_superuser:
+        messages.error(request, "Bạn không có quyền xóa người dùng.")
+        return redirect('user:user_list')
+
     if request.method == 'POST':
         user.delete()
-        messages.success(request, "delete successful!")
+        messages.success(request, "Người dùng đã được xóa thành công!")
         return redirect('user:user_list')
 
     return render(request, 'user_confirm_delete.html', {'user': user})
 
-
-
 @login_required
-@role_required(['Manager'])
 def export_users(request):
+    # Kiểm tra xem người dùng có profile không
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền xuất dữ liệu người dùng.")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
+
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    # Kiểm tra quyền xuất người dùng
+    if 'can_export_users' not in user_role_permissions:
+        messages.error(request, "Bạn không có quyền xuất dữ liệu người dùng.")  # Thông báo lỗi
+        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
+
+    # Code export dữ liệu người dùng
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    selected_role = request.GET.get('role', '').strip()
-
-    if selected_role:
-        safe_role = "".join(c for c in selected_role if c.isalnum() or c in ['_', '-'])
-        filename = f'{safe_role}.xlsx'
-    else:
-        filename = 'users.xlsx'
-
+    filename = 'users.xlsx'
     response['Content-Disposition'] = f'attachment; filename={filename}'
 
     workbook = Workbook()
     worksheet = workbook.active
-    worksheet.title = f'{safe_role}' if selected_role else 'Users'
-
-    columns = ['Username', 'Email', 'First Name', 'Last Name', 'Role', 'Profile Picture', 'Password Hash', 'Bio', 'Interests', 'Learning Style', 'Preferred Language', 'Student Code']
+    worksheet.title = 'Users'
+    columns = ['Username', 'Email', 'First Name', 'Last Name', 'Role']
     worksheet.append(columns)
 
     users = User.objects.exclude(is_superuser=True)
 
-    if selected_role:
-        users = users.filter(profile__role__role_name=selected_role)
-
     for user in users:
         profile = Profile.objects.filter(user=user).first()
-        student = None
-
-        if profile and profile.student:
-            student = profile.student
-
-        if profile:
-            role_name = profile.role.role_name if profile.role else 'No Role'
-            profile_picture_url = profile.profile_picture_url if profile else 'No Image'
-            bio = profile.bio if profile else 'N/A'
-            interests = profile.interests if profile else 'N/A'
-            learning_style = profile.learning_style if profile else 'N/A'
-            preferred_language = profile.preferred_language if profile else 'N/A'
-        else:
-            role_name = 'No Role'
-            profile_picture_url = 'No Image'
-            bio = 'N/A'
-            interests = 'N/A'
-            learning_style = 'N/A'
-            preferred_language = 'N/A'
-
-        password_hash = user.password
-        student_code = student.student_code if student else 'N/A'
-
-        worksheet.append([
-            user.username, user.email, user.first_name, user.last_name,
-            role_name, profile_picture_url, password_hash, bio, interests, learning_style, preferred_language, student_code
-        ])
+        role_name = profile.role.role_name if profile else 'No Role'
+        worksheet.append([user.username, user.email, user.first_name, user.last_name, role_name])
 
     workbook.save(response)
     return response
 
 @login_required
-@role_required(['Manager'])
+
 def import_users(request):
+    if not hasattr(request.user, 'profile') or request.user.profile is None:
+        messages.error(request, "Bạn không có quyền nhập dữ liệu người dùng.")  # Thông báo lỗi
+        return redirect('user:user_list')
+
+    user_role_permissions = request.user.profile.role.permissions.values_list('codename', flat=True)
+
+    # Kiểm tra quyền nhập dữ liệu người dùng
+    if 'can_import_users' not in user_role_permissions:
+        messages.error(request, "Bạn không có quyền nhập dữ liệu người dùng.")  # Thông báo lỗi
+        return redirect('user:user_list')
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
 

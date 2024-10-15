@@ -45,25 +45,38 @@ def password_reset_request(request):
         form = PasswordResetRequestForm()
     return render(request, 'password_reset.html', {'form': form, 'current_step': 'request'})
 
+def get_remaining_time(created_at, expiration_duration_minutes):
+    if created_at:
+        created_at = timezone.datetime.fromisoformat(created_at)
+        if created_at.tzinfo is None:
+            created_at = timezone.make_aware(created_at)
+
+        expiration_time = created_at + timedelta(minutes=expiration_duration_minutes)
+        remaining_time = expiration_time - timezone.now()
+
+        if remaining_time.total_seconds() >= 0:
+            minutes = remaining_time.seconds // 60
+            seconds = remaining_time.seconds % 60  
+            return remaining_time, minutes, seconds
+
+    return None, 0, 0
+
 def password_reset_code(request):
+    created_at = request.session.get('code_created_at')
+    expiration_duration_minutes = 0.5  
+
+    
+    remaining_time, minutes, seconds = get_remaining_time(created_at, expiration_duration_minutes)
+
     if request.method == 'POST':
         form = PasswordResetCodeForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['code']
             session_code = request.session.get('reset_code')
-            created_at = request.session.get('code_created_at')
 
             if session_code and created_at:
-                created_at = timezone.datetime.fromisoformat(created_at)
-
-                if created_at.tzinfo is None:
-                    created_at = timezone.make_aware(created_at)
-
-                expiration_time = created_at + timedelta(minutes=1)
-                remaining_time = expiration_time - timezone.now()
-
-                if code == session_code and remaining_time.total_seconds() > 0:
-                    messages.success(request, 'Verification code is valid. Please enter a new password.')
+                if code == session_code and remaining_time and remaining_time.total_seconds() > 0:
+                    messages.success(request, 'The verification code is valid. Please enter a new password.')
                     return redirect('main:password_reset_form')
                 else:
                     messages.error(request, 'The code has expired or is invalid.')
@@ -74,31 +87,13 @@ def password_reset_code(request):
     else:
         form = PasswordResetCodeForm()
 
-    created_at = request.session.get('code_created_at')
-    remaining_time = None
-    minutes = 0
-    seconds = 0
-
-    if created_at:
-        created_at = timezone.datetime.fromisoformat(created_at)
-        if created_at.tzinfo is None:
-            created_at = timezone.make_aware(created_at)
-
-        expiration_time = created_at + timedelta(minutes=1)
-        remaining_time = expiration_time - timezone.now()
-
-        if remaining_time.total_seconds() >= 0:
-            minutes = remaining_time.seconds // 60
-            seconds = remaining_time.seconds % 60
-        else:
-            remaining_time = None
 
     return render(request, 'password_reset.html', {
         'form': form,
         'current_step': 'code',
         'remaining_time': remaining_time,
         'minutes': minutes,
-        'seconds': seconds
+        'seconds': seconds  # Gửi seconds dưới dạng số nguyên
     })
 
 def resend_code_auto(request):

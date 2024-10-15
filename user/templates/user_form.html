@@ -91,21 +91,21 @@
                 </ul>
             {% endif %}
         </div>
-        {% if request.user.is_authenticated %}
-            {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
-                <div class="form-group">
-                    {{ form.role.label_tag }}
-                    {{ form.role|add_class:"form-control" }}
-                    {% if form.role.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.role.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
+        {% comment %} {% if request.user.is_authenticated %}
+            {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %} {% endcomment %}
+        <div class="form-group">
+            {{ form.role.label_tag }}
+            {{ form.role|add_class:"form-control" }}
+            {% if form.role.errors %}
+                <ul class="errorlist">
+                    {% for error in form.role.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
-        {% endif %}
+        </div>
+            {% comment %} {% endif %}
+        {% endif %} {% endcomment %}
         {% if request.user.is_authenticated %}
             {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
                 <div class="form-group">

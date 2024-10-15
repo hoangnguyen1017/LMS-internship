@@ -97,10 +97,13 @@
                 <select id="role" name="role" class="form-control">
                     <option value="" disabled {% if not selected_role %}selected{% endif %}>Select Role</option>
                     {% for role in roles %}
-                        <option value="{{ role.role_name }}" {% if role.role_name == selected_role %}selected{% endif %}>{{ role.role_name }}</option>
+                        {% if role.role_name and role.role_name != "N/A" %}
+                            <option value="{{ role.role_name }}" {% if role.role_name == selected_role %}selected{% endif %}>{{ role.role_name }}</option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>
+            
 
             <button type="submit" class="btn btn-login">Login</button>
         </form>

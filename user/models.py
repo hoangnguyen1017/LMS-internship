@@ -25,7 +25,7 @@ class User(AbstractUser):
         verbose_name='user permissions',
         related_name='custom_user_permissions',
     )
-
+    
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Activity Log{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --background-color: #ecf0f1;
+        --text-color: #34495e;
+        --accent-color: #e74c3c;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--background-color);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    h2 {
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-form input,
+    .search-form button {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .search-form input[type="text"],
+    .search-form input[type="date"] {
+        flex-grow: 1;
+    }
+
+    .search-form button {
+        background-color: var(--primary-color);
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .search-form button:hover {
+        background-color: #2980b9;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-table th,
+    .activity-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .activity-table th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+
+    .activity-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .activity-table tr:hover {
+        background-color: #e9ecef;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        list-style-type: none;
+        margin-top: 2rem;
+    }
+
+    .page-item {
+        margin: 0 0.25rem;
+    }
+
+    .page-link {
+        display: block;
+        padding: 0.5rem 0.75rem;
+        color: var(--primary-color);
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background-color: #e9ecef;
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        cursor: auto;
+        background-color: white;
+        border-color: #dee2e6;
+    }
+
+    @media (max-width: 768px) {
+        .search-form {
+            flex-direction: column;
+        }
+
+        .activity-table {
+            font-size: 0.9rem;
+        }
+
+        .activity-table th,
+        .activity-table td {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Student Activity Log</h2>
+
+    <form method="get" class="search-form">
+        <input type="text" name="search" placeholder="Search activity details..." value="{{ search_query }}">
+        
+        <label for="from_date">From:</label>
+        <input type="date" id="from_date" name="from_date" value="{{ from_date }}">
+        
+        <label for="to_date">To:</label>
+        <input type="date" id="to_date" name="to_date" value="{{ to_date }}">
+        
+        <button type="submit">Search</button>
+    </form>
+
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>NO</th>
+                <th>Activity Type</th>
+                <th>Details</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in activity_logs %}
+                <tr>
+                    <td>{{ forloop.counter0|add:activity_logs.start_index }}</td>
+                    <td>{{ log.get_activity_type_display }}</td>
+                    <td>{{ log.activity_details }}</td>
+                    <td>{{ log.activity_timestamp }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">No activity records found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if activity_logs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page={{ activity_logs.previous_page_number }}" aria-label="Previous">
+                        &laquo; Previous
+                    </a>
+                </li>
+            {% endif %}
+    
+            {% if activity_logs.number > 3 %}
+                <li class="page-item">
+                    <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page=1">1</a>
+                </li>
+                {% if activity_logs.number > 4 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page=2">2</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+    
+            {% for num in activity_logs.paginator.page_range %}
+                {% if num >= activity_logs.number|add:'-2' and num <= activity_logs.number|add:'2' %}
+                    {% if num == activity_logs.number %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+    
+            {% if activity_logs.number < activity_logs.paginator.num_pages|add:'-2' %}
+                {% if activity_logs.number < activity_logs.paginator.num_pages|add:'-3' %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page={{ activity_logs.paginator.num_pages }}">{{ activity_logs.paginator.num_pages }}</a>
+                </li>
+            {% endif %}
+    
+            {% if activity_logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?search={{ search_query|urlencode }}&from_date={{ from_date|urlencode }}&to_date={{ to_date|urlencode }}&page={{ activity_logs.next_page_number }}" aria-label="Next">
+                        Next &raquo;
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>        
+</div>
+{% endblock %}

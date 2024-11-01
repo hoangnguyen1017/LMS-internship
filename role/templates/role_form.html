@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load form_filters %}
+{% load role_form_filters %}
 {% block title %}{{ form.instance.pk|yesno:"Edit Role,Add New Role" }}{% endblock %}
 
 {% block content %}

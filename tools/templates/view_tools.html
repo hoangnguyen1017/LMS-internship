@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <!-- Card Header with two clickable headers (Excel and Word) -->
+        <div class="card">
+            <div class="card card-header title">
+                <h1 class="text-center">Convert Tools</h1>
+            </div>
+            <div class="card card-body">
+                <div class="row text-center">
+                    <div class="col-md-4 d-flex justify-content-center align-items-center">
+                        <a href="{% url 'tools:excel_to_json_view' %}" class="text-center">EXCEL ==> JSON</a>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-center align-items-center">
+                        <a href="{% url 'tools:txt_to_json_view' %}" class="text-center">TXT ==> JSON</a>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-center align-items-center">
+                        <a href="{% url 'tools:word_to_json_view' %}" class="text-center">WORD ==> JSON</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body to display content -->
+            
+        </div>
+    </div>
+</div>
+<script>
+// Function to show Excel content and hide Word content
+function showExcel() {
+    document.getElementById("excelContent").classList.remove("d-none");
+    document.getElementById("wordContent").classList.add("d-none");
+    
+    // Optional: Update button styles to indicate active tab
+    document.getElementById("excelTab").classList.add("btn-primary");
+    document.getElementById("excelTab").classList.remove("btn-secondary");
+    document.getElementById("wordTab").classList.add("btn-secondary");
+    document.getElementById("wordTab").classList.remove("btn-primary");
+}
+
+// Function to show Word content and hide Excel content
+function showWord() {
+    document.getElementById("wordContent").classList.remove("d-none");
+    document.getElementById("excelContent").classList.add("d-none");
+    
+    // Optional: Update button styles to indicate active tab
+    document.getElementById("wordTab").classList.add("btn-primary");
+    document.getElementById("wordTab").classList.remove("btn-secondary");
+    document.getElementById("excelTab").classList.add("btn-secondary");
+    document.getElementById("excelTab").classList.remove("btn-primary");
+}
+</script>
+{% endblock %}

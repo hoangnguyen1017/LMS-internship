@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static %} 
+{% block title %}Module Groups{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -7,21 +8,22 @@
     <a href="{% url 'module_group:module_group_add' %}" class="btn btn-primary">Add New Module Group</a>
     <button class="btn btn-success" title="Import Module Group from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
         <i class="fas fa-file-import"></i> Import
-    </button>
-    <a href="{% url 'module_group:export_module_groups' %}" class="btn btn-secondary" title="Export Module Groups to Excel" data-toggle="tooltip">
+      </button>
+      <a href="{% url 'module_group:export_module_groups' %}" class="btn btn-secondary" title="Export Users to Excel" data-toggle="tooltip">
         <i class="fas fa-file-export"></i> Export
-    </a>
-
-    <table class="table table-striped mt-3">
+      </a>
+    <table class="table table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Group Name</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for group in module_groups %}
-            <tr ondblclick="window.location.href='{% url 'module_group:module_group_detail' group.pk %}'" style="cursor: pointer;">
+            <tr>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ group.group_name }}</td>
                 <td>
                     <a href="{% url 'module_group:module_group_detail' group.pk %}" class="btn btn-info btn-sm">Details</a>
@@ -32,30 +34,42 @@
             {% endfor %}
         </tbody>
     </table>
+
 </div>
 
 <!-- Import Modal -->
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">Import Module Groups from Excel</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Import Form -->
-                <form method="post" enctype="multipart/form-data" action="{% url 'module_group:import_module_groups' %}">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </div>
-                </form>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importModalLabel">Import Module Groups from Excel</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+        <div class="modal-body">
+          <!-- Import Form -->
+          <form method="post" enctype="multipart/form-data" action="{% url 'module_group:import_module_groups' %}">
+          <div class="mb-4">
+            <span>
+              Please download and use the <a href="{% static 'excel/import_module_groups.xlsx' %}" target="_blank">Excel template</a>. The Excel file must contain exactly one sheet with the required columns.
+            </span>
+          </div>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
+  <!-- Initialize Bootstrap Tooltips -->
+<script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
 {% endblock %}

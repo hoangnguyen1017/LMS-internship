@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Learning{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'mylearning.css' %}">
+
+<div class="container bg-light my-4 p-4 rounded shadow-sm">
+    <h1 class="mb-3">My Learning</h1>
+    <div class="d-flex align-items-center">
+        <p class="me-2 text-muted mb-0">
+            <small>87hr 36min watch</small>
+        </p>
+        <i class="fa-solid fa-circle-info text-muted"></i>
+        <a href="#" class="link-primary ms-2">View all activity</a>
+    </div>
+
+    <!-- Include the tabs here -->
+    {% include "mylearning_tabs.html" %}
+
+</div>
+
+<main class="container">
+    <div class="row">
+        <div class="col-md-12 certification-scroll-container">
+            {% for certification in certifications %}
+                <div class="certificate-content p-3 border rounded bg-light">
+                    {{ certification.generated_html_content|safe }}
+                </div>
+            {% empty %}
+                <p>You have no certifications yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custome_filters %}
+{% block title %}Chi tiết địa điểm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-primary">Chi tiết địa điểm: {{ location.name }}</h1>
+    <p><strong>Địa chỉ:</strong> {{ location.address }}</p>
+
+    <div class="mt-4">
+        <a href="{% url 'department:location_update' location.pk %}" class="btn btn-warning me-2">Chỉnh sửa</a>
+        <form action="{% url 'department:location_delete' location.pk %}" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger me-2">Xóa</button>
+        </form>
+        <a href="{% url 'department:location_list' %}" class="btn btn-secondary">Quay lại danh sách</a>
+    </div>
+</div>
+{% endblock %}

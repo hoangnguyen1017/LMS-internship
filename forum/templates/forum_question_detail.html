@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ question.title }}</h2>
+<p>{{ question.content }}</p>
+{% if question.image %}
+    <img src="{{ question.image.url }}" alt="Question Image" style="max-width: 100%;">
+{% endif %}
+
+<!-- Like and Dislike buttons for the question -->
+<form method="post" action="{% url 'forum:like_question' question.pk %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+        Like ({{ question.likes.count }})
+    </button>
+</form>
+<form method="post" action="{% url 'forum:dislike_question' question.pk %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary">
+        Dislike ({{ question.dislikes.count }})
+    </button>
+</form>
+
+<!-- Edit, Delete, and Report buttons for the question -->
+<a href="{% url 'forum:edit_question' question.pk %}" class="btn btn-secondary">Edit</a>
+<form method="post" action="{% url 'forum:delete_question' question.pk %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete</button>
+</form>
+<a href="{% url 'forum:report_content' 'question' question.pk %}" class="btn btn-warning">Report</a>
+
+<hr>
+
+<!-- Display comments and nested replies -->
+<h3>Comments</h3>
+<ul>
+    {% for comment in comments %}
+    <li>
+        <strong>{{ comment.user.username }}:</strong> {{ comment.content }}
+        {% if comment.image %}
+            <img src="{{ comment.image.url }}" alt="Comment Image" style="max-width: 100%;">
+        {% endif %}
+
+        <!-- Like and Dislike buttons for the comment -->
+        <form method="post" action="{% url 'forum:like_comment' comment.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                Like ({{ comment.likes.count }})
+            </button>
+        </form>
+        <form method="post" action="{% url 'forum:dislike_comment' comment.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">
+                Dislike ({{ comment.dislikes.count }})
+            </button>
+        </form>
+
+        <!-- Edit, Delete, and Report buttons for the comment -->
+        <a href="{% url 'forum:edit_comment' comment.pk %}" class="btn btn-secondary">Edit</a>
+        <form method="post" action="{% url 'forum:delete_comment' comment.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <a href="{% url 'forum:report_content' 'comment' comment.pk %}" class="btn btn-warning">Report</a>
+
+        <!-- Reply to Comment -->
+        <button onclick="document.getElementById('replyFormComment{{ comment.id }}').style.display='block'">Reply</button>
+        <form method="post" enctype="multipart/form-data" style="display:none;" id="replyFormComment{{ comment.id }}">
+            {% csrf_token %}
+            {{ reply_form.content }}
+            {{ reply_form.image }}
+            <input type="hidden" name="comment_id" value="{{ comment.id }}">
+            <button type="submit" name="submit_reply">Post Reply</button>
+        </form>
+
+        <!-- Show replies (recursively) -->
+        {% include 'replies.html' with replies=comment.replies.all %}
+    </li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<!-- Comment Form -->
+<h3>Post a Comment</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ comment_form.content }}
+    {{ comment_form.image }}
+    <button type="submit" name="submit_comment">Post Comment</button>
+</form>
+{% endblock %}

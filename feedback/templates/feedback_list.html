@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Feedback List</h2>
+
+    <!-- Form to give instructor feedback with dropdown -->
+    <form id="instructorFeedbackForm" method="get" action="">
+        <div class="form-group">
+            <label for="instructor">Select Instructor:</label>
+            <select name="instructor_id" id="instructor" class="form-control" onchange="setInstructorAction()">
+                <option value="">Select an Instructor</option>
+                {% for instructor in instructors %}
+                <option value="{{ instructor.id }}">{{ instructor.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3">Give Instructor Feedback</button>
+    </form>
+
+    <!-- Repeat the same structure for Course and Training Program feedback forms -->
+    <!-- Form to give course feedback with dropdown -->
+    <form id="courseFeedbackForm" method="get" action="">
+        <div class="form-group">
+            <label for="course">Select Course:</label>
+            <select name="course_id" id="course" class="form-control" onchange="setCourseAction()">
+                <option value="">Select a Course</option>
+                {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.course_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3">Give Course Feedback</button>
+    </form>
+
+    <!-- Form to give training program feedback with dropdown -->
+    <form id="trainingProgramFeedbackForm" method="get" action="">
+        <div class="form-group">
+            <label for="trainingprogram">Select Training Program:</label>
+            <select name="training_program_id" id="trainingprogram" class="form-control" onchange="setProgramAction()">
+                <option value="">Select a Training Program</option>
+                {% for training_program in training_programs %}
+                <option value="{{ training_program.id }}">{{ training_program.program_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    <button type="submit" class="btn btn-primary mb-3">Give Training Program Feedback</button>
+</form>
+
+    <h3>Instructor Feedback</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Instructor</th>
+                <th>Average Rating</th>
+                <th>Comments</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in instructor_feedbacks %}
+            <tr>
+                <td>{{ feedback.instructor.username }}</td>
+                <td>{{ feedback.average_rating }}</td>
+                <td>{{ feedback.comments }}</td>
+                <td>{{ feedback.created_at }}</td>
+                <td>
+                    <a href="{% url 'feedback:instructor_feedback_detail' feedback.id %}" class="btn btn-info">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <h3>Course Feedback</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Average Rating</th>
+                <th>Comments</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in course_feedbacks %}
+            <tr>
+                <td>{{ feedback.course.course_name }}</td>
+                <td>{{ feedback.average_rating }}</td>
+                <td>{{ feedback.comments }}</td>
+                <td>{{ feedback.created_at }}</td>
+                <td>
+                    <a href="{% url 'feedback:course_feedback_detail' feedback.id %}" class="btn btn-info">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Training Program Feedback</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Training Program</th>
+                <th>Average Rating</th>
+                <th>Comments</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in program_feedbacks %}
+            <tr>
+                <td>{{ feedback.program.program_name }}</td>
+                <td>{{ feedback.average_rating }}</td>
+                <td>{{ feedback.comments }}</td>
+                <td>{{ feedback.created_at }}</td>
+                <td>
+                    <a href="{% url 'feedback:program_feedback_detail' feedback.id %}" class="btn btn-info">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function setInstructorAction() {
+        const instructorId = document.getElementById('instructor').value;  // Use 'instructor' instead of 'user'
+        const form = document.getElementById('instructorFeedbackForm');
+        if (instructorId) {
+            form.action = `{% url 'feedback:give_instructor_feedback' instructor_id=0 %}`.replace('0', instructorId);
+        } else {
+            form.action = "";  // Clear the action if no instructor is selected
+        }
+    }
+
+    function setCourseAction() {
+        const courseId = document.getElementById('course').value;  // Use 'course' instead of 'subject'
+        const form = document.getElementById('courseFeedbackForm');
+        if (courseId) {
+            form.action = `{% url 'feedback:give_course_feedback' course_id=0 %}`.replace('0', courseId);
+        } else {
+            form.action = "";  // Clear the action if no course is selected
+        }
+    }
+
+    function setProgramAction() {
+        const programId = document.getElementById('trainingprogram').value;
+        const form = document.getElementById('trainingProgramFeedbackForm');
+        if (programId) {
+            form.action = `{% url 'feedback:give_training_program_feedback' training_program_id=0 %}`.replace('0', programId);
+        } else {
+            form.action = "";  // Clear the action if no program is selected
+        }
+    }
+</script>
+
+{% endblock %}

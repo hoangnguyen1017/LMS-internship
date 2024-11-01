@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .custom-button {
+        border: 1px solid rgb(53, 37, 142); /* Tạo viền màu đen bao quanh */
+        color: blue; /* Chữ có màu xanh dương */
+        padding: 5px 5px; /* Tạo khoảng cách giữa chữ và viền */
+        background-color: rgb(224, 217, 217); /* Nền trắng */
+        cursor: pointer; /* Đổi con trỏ chuột thành dạng pointer khi hover */
+        font-size: 14px; /* Kích thước chữ */
+    }
+
+    .custom-button:hover {
+        background-color: lightblue; /* Màu nền thay đổi khi hover */
+    }
+
+    .drop-zone {
+        border: 2px dashed rgb(53, 37, 142);
+        border-radius: 20px;
+        padding: 60px;
+        text-align: center;
+        background-color: #f8f8f8;
+        cursor: pointer;
+    }
+
+    .drop-zone.dragover {
+        background-color: #667dae; /* Thay đổi màu nền khi kéo tệp qua */
+    }
+
+    .file-list {
+        margin-top: 10px;
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .file-list li {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+
+    .text-right {
+        text-align: right; /* Căn chỉnh sang bên phải */
+    }
+    .title {
+        border: 2px solid rgb(125, 44, 9);
+        font-size: 20px;
+        background-color: rgb(236, 116, 90);
+    }
+    .remove-button {
+    background: none; /* Không có nền */
+    border: none; /* Không có viền */
+    color: rgb(32, 25, 125); /* Màu chữ */
+    font-size: 18px; /* Kích thước chữ */
+    cursor: pointer; /* Đổi con trỏ chuột thành dạng pointer khi hover */
+    margin-left: 10px; /* Khoảng cách giữa tên tệp và nút xóa */
+    }
+
+    .remove-button:hover {
+    color: darkred; /* Thay đổi màu chữ khi hover */
+    }
+</style>
+
+<div class="card card-header title">
+    <h1 class="text-center">Convert Excel Files to JSON</h1>
+</div>
+<div class="card card-body">
+    <form method="post" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <div class="drop-zone" id="drop-zone">
+            Drag your excel file here! 
+        </div>
+        <input type="file" name="files" id="file-input" multiple style="display: none;"> <!-- Đảm bảo input file có thể chứa nhiều file -->
+        <ul class="file-list" id="file-list"></ul> <!-- Thêm danh sách để hiển thị tệp -->
+        <div class="text-right">
+            <button type="submit" class="custom-button">Convert</button>
+        </div>
+    </form>
+</div>
+<div class="d-flex justify-content-end" style="margin-right: 20px;">
+    <a href="{% url 'tools:view_tools' %}" class="btn btn-link">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+    let filesArray = []; // Mảng để lưu trữ các tệp hiện tại
+    const validExtensions = ['.xlsx' ,'.xls']
+// Khi người dùng nhấp vào vùng kéo thả, kích hoạt input để chọn tệp
+dropZone.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Khi người dùng kéo tệp vào vùng kéo thả
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+
+// Khi người dùng kéo tệp ra khỏi vùng kéo thả
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+});
+
+// Khi người dùng thả tệp vào vùng kéo thả
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+
+    const droppedFiles = e.dataTransfer.files;
+    addFilesToArray(droppedFiles); // Thêm tệp vào mảng và cập nhật danh sách hiển thị
+});
+
+// Khi người dùng chọn tệp từ hộp thoại
+fileInput.addEventListener('change', () => {
+    addFilesToArray(fileInput.files); // Thêm tệp vào mảng và cập nhật danh sách hiển thị
+});
+
+// Hàm thêm tệp vào mảng và cập nhật danh sách
+function addFilesToArray(newFiles) {
+        for (let i = 0; i < newFiles.length; i++) {
+            const ext = newFiles[i].name.split('.').pop().toLowerCase(); // Lấy đuôi tệp
+            if (!validExtensions.includes('.' + ext)) { // Kiểm tra định dạng
+                alert(`Tệp '${newFiles[i].name}' không hợp lệ! Vui lòng chọn tệp Excel (.xls, .xlsx).`);
+                continue; // Bỏ qua tệp không hợp lệ
+            }
+            if (!filesArray.some(file => file.name === newFiles[i].name)) { // Kiểm tra trùng tên tệp
+                filesArray.push(newFiles[i]); // Thêm tệp vào mảng
+            }
+        }
+        updateFileList();
+    }
+
+// Hàm cập nhật danh sách các tệp hiển thị trong vùng kéo thả
+function updateFileList() {
+    fileList.innerHTML = ''; // Xóa danh sách hiện tại
+
+    filesArray.forEach((file, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = file.name; // Hiển thị tên của từng tệp
+
+        // Tạo nút xóa
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '×'; // Dấu xóa
+        removeButton.classList.add('remove-button'); // Thêm lớp CSS
+
+        // Xử lý sự kiện khi nút xóa được nhấn
+        removeButton.addEventListener('click', () => {
+            // Xóa tệp khỏi mảng
+            filesArray.splice(index, 1);
+            updateFileList(); // Cập nhật danh sách hiển thị
+            updateFileInput(); // Cập nhật lại input file
+        });
+
+        listItem.appendChild(removeButton); // Thêm nút xóa vào danh sách
+        fileList.appendChild(listItem); // Thêm item vào danh sách
+    });
+
+    updateFileInput(); // Cập nhật lại input file
+}
+
+// Hàm cập nhật input file với danh sách tệp hiện tại
+function updateFileInput() {
+    const dataTransfer = new DataTransfer();
+    filesArray.forEach(file => dataTransfer.items.add(file));
+    fileInput.files = dataTransfer.files; // Cập nhật file input
+}
+
+
+</script>
+{% endblock %}

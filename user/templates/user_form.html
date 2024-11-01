@@ -1,157 +1,240 @@
 {% extends 'base.html' %}
-{% load form_filters %}
-
-{% block title %}{{ user_form.instance.pk|yesno:"Edit User,Add New User" }}{% endblock %}
+{% load user_form_filters %}
+{% block title %}{{ form.instance.pk|yesno:"Edit User, Add New User" }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">{{ user_form.instance.pk|yesno:"Edit User,Add New User" }}</h2>
-    
-    <form method="post">
-        {% csrf_token %}
+    <div class="card shadow-lg p-4 bg-gradient-light rounded">
+        <h2 class="text-center text-primary font-weight-bold mb-4">
+            {% if form.instance.pk %}
+                <i class="fas fa-edit"></i> Edit User
+            {% else %}
+                <i class="fas fa-plus"></i> Add User
+            {% endif %}
+        </h2>        
         
-        <!-- User Information Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>User Information</h4>
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>Invalid form</strong>
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            <div class="card-body">
-                <div class="form-group mb-3">
-                    {{ user_form.username.label_tag }}
-                    {{ user_form.username|add_class:"form-control" }} 
-                </div>
+        {% endif %}
 
-                <div class="form-group mb-3">
-                    {{ user_form.password.label_tag }}
-                    {{ user_form.password|add_class:"form-control" }}
-                    <!-- Display password conditions -->
-                    <div id="password-conditions" class="mt-2">
-                        <ul class="list-unstyled">
-                            <li id="length-condition" class="text-danger">- Password must be at least 8 characters long.</li>
-                            <li id="uppercase-condition" class="text-danger">- Password must contain at least one uppercase letter.</li>
-                            <li id="lowercase-condition" class="text-danger">- Password must contain at least one lowercase letter.</li>
-                            <li id="number-condition" class="text-danger">- Password must contain at least one number.</li>
-                            <li id="special-condition" class="text-danger">- Password must contain at least one special character (@, $, !, %, *, ?, &).</li>
-                        </ul>
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name|add_class:"form-control" }}
+                    {% if form.first_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.first_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name|add_class:"form-control" }}
+                    {% if form.last_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.last_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    {{ form.username.label_tag }}
+                    {{ form.username|add_class:"form-control" }}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+
+                <div class="col-md-6 mb-3">
+                    {{ form.email.label_tag }}
+                    {{ form.email|add_class:"form-control" }}
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.email.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
                     </div>
-                </div>
-
-                <div class="form-group mb-3">
-                    {{ user_form.email.label_tag }}
-                    {{ user_form.email|add_class:"form-control" }} 
-                </div>
-
-                <div class="form-group mb-3">
-                    {{ user_form.full_name.label_tag }}
-                    {{ user_form.full_name|add_class:"form-control" }} 
-                </div>
-
-                <div class="form-group mb-3">
-                    {{ user_form.role.label_tag }}
-                    {{ user_form.role|add_class:"form-control" }} 
-                </div>
-
-                <div class="form-group mb-3">
-                    {{ user_form.profile_picture_url.label_tag }}
-                    {{ user_form.profile_picture_url|add_class:"form-control" }} 
-                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- User Profile Section -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>User Profile</h4>
+        {% if request.user.is_authenticated %}
+        <div class="form-group">
+            {{ form.role.label_tag }}
+            {% if request.user.profile.role.role_name == 'Manager' or request.user.is_superuser %}
+                {{ form.role|add_class:"form-control" }} <!-- Editable for Managers and superusers -->
+            {% else %}
+                <input type="text" class="form-control" value="{{ request.user.profile.role.role_name }}" readonly> <!-- Readonly for normal users -->
+                <input type="hidden" name="role" value="{{ request.user.profile.role.id }}"> <!-- Gửi ID của role để biểu mẫu vẫn hợp lệ -->
+            {% endif %}
+            {% if form.role.errors %}
+                <ul class="errorlist">
+                    {% for error in form.role.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if form.instance.profile.role.role_name == 'Student' %}
+            <div class="form-group">
+                {{ form.student_code.label_tag }}
+                {{ form.student_code|add_class:"form-control" }}
+                {% if form.student_code.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.student_code.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
-            <div class="card-body">
-                <div class="form-group mb-3">
-                    {{ profile_form.bio.label_tag }}
-                    {{ profile_form.bio|add_class:"form-control" }} 
+        {% endif %}
+        <div class="form-group">
+            <label for="id_profile_picture_url">Profile Picture URL:</label>
+            <input type="url" name="profile_picture_url" id="id_profile_picture_url" class="form-control" placeholder="Enter profile picture URL" value="{{ form.fields.profile_picture_url.initial }}">
+            {% if form.fields.profile_picture_url.initial %}
+                <small class="form-text text-muted">Current: <a href="{{ form.fields.profile_picture_url.initial }}" target="_blank">{{ form.fields.profile_picture_url.initial }}</a></small>
+            {% endif %}
+            {% if form.profile_picture_url.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.profile_picture_url.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
                 </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.bio.label_tag }}
+            <textarea class="form-control" rows="3" name="bio">{{ form.bio.value }}</textarea>
+                {% if form.bio.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.bio.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+    
+            <div class="form-group">
+                {{ form.interests.label_tag }}
+                <textarea class="form-control" rows="3" name="interests">{{ form.interests.value }}</textarea>
+                {% if form.interests.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.interests.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
 
-                <div class="form-group mb-3">
-                    {{ profile_form.interests.label_tag }}
-                    {{ profile_form.interests|add_class:"form-control" }} 
-                </div>
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    {{ form.learning_style.label_tag }}
+                    {{ form.learning_style|add_class:"form-control" }}
+                    {% if form.learning_style.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.learning_style.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
 
-                <div class="form-group mb-3">
-                    {{ profile_form.learning_style.label_tag }}
-                    {{ profile_form.learning_style|add_class:"form-control" }} 
-                </div>
-
-                <div class="form-group mb-3">
-                    {{ profile_form.preferred_language.label_tag }}
-                    {{ profile_form.preferred_language|add_class:"form-control" }} 
-                </div>
+            <div class="col-md-6 mb-3">
+                {{ form.preferred_language.label_tag }}
+                {{ form.preferred_language|add_class:"form-control" }}
+                {% if form.preferred_language.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.preferred_language.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'user:user_list' %}" class="btn btn-secondary">Back to User List</a>
+        <div class="text-center mt-3">
+            {% if request.user.is_authenticated %}
+                    {% if form.instance.pk %}
+                        <!-- Nếu đang chỉnh sửa, hiện chữ "Change Password" -->
+                        <button type="button" class="btn btn-warning" id="togglePasswordChange">Change Password</button>
+                    {% else %}
+                        <!-- Nếu đang tạo mới, hiện chữ "Create Password" -->
+                        <button type="button" class="btn btn-warning" id="togglePasswordChange">Create Password</button>
+                    {% endif %}
+            {% endif %}
         </div>
-    </form>
-</div>
+        
+        <!-- Password change fields, hidden by default -->
+        <div id="passwordChangeSection" class="mt-3" style="display: none; text-align: center;">
+            <div class="form-group" style="max-width: 300px; margin: 0 auto;">
+                {{ form.password1.label_tag }}
+                {{ form.password1|add_class:"form-control" }}
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password1.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="max-width: 300px; margin: 0 auto;">
+                {{ form.password2.label_tag }}
+                {{ form.password2|add_class:"form-control" }}
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4"> <!-- Sử dụng Flexbox -->
+            <div>
+                <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow">{{ form.instance.pk|yesno:"Update,Create" }}</button>
+            </div>
+        
+            <div>
+                <a href="{% url 'user:user_list' %}" class="btn btn-outline-dark btn-lg rounded-pill shadow-sm">
+                    <i class="fas fa-arrow-left"></i> Back to User List
+                </a>
+            </div>
+        </div>
+        
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const passwordInput = document.getElementById('{{ user_form.password.id_for_label }}');
-        const lengthCondition = document.getElementById('length-condition');
-        const uppercaseCondition = document.getElementById('uppercase-condition');
-        const lowercaseCondition = document.getElementById('lowercase-condition');
-        const numberCondition = document.getElementById('number-condition');
-        const specialCondition = document.getElementById('special-condition');
-
-        passwordInput.addEventListener('input', function() {
-            const password = passwordInput.value;
-
-            // Check length
-            if (password.length >= 8) {
-                lengthCondition.classList.remove('text-danger');
-                lengthCondition.classList.add('text-success');
-            } else {
-                lengthCondition.classList.remove('text-success');
-                lengthCondition.classList.add('text-danger');
-            }
-
-            // Check uppercase
-            if (/[A-Z]/.test(password)) {
-                uppercaseCondition.classList.remove('text-danger');
-                uppercaseCondition.classList.add('text-success');
-            } else {
-                uppercaseCondition.classList.remove('text-success');
-                uppercaseCondition.classList.add('text-danger');
-            }
-
-            // Check lowercase
-            if (/[a-z]/.test(password)) {
-                lowercaseCondition.classList.remove('text-danger');
-                lowercaseCondition.classList.add('text-success');
-            } else {
-                lowercaseCondition.classList.remove('text-success');
-                lowercaseCondition.classList.add('text-danger');
-            }
-
-            // Check number
-            if (/\d/.test(password)) {
-                numberCondition.classList.remove('text-danger');
-                numberCondition.classList.add('text-success');
-            } else {
-                numberCondition.classList.remove('text-success');
-                numberCondition.classList.add('text-danger');
-            }
-
-            // Check special character
-            if (/[@$!%*?&]/.test(password)) {
-                specialCondition.classList.remove('text-danger');
-                specialCondition.classList.add('text-success');
-            } else {
-                specialCondition.classList.remove('text-success');
-                specialCondition.classList.add('text-danger');
-            }
-        });
-    });
+document.getElementById('togglePasswordChange').addEventListener('click', function() {var passwordSection = document.getElementById('passwordChangeSection');
+if (passwordSection.style.display === 'none') {
+    passwordSection.style.display = 'block';
+} else {
+    passwordSection.style.display = 'none';
+}
+});
 </script>
-
 {% endblock %}

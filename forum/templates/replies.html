@@ -1,0 +1,45 @@
+<ul>
+    {% for reply in replies %}
+    <li>
+        <strong>{{ reply.user.username }}:</strong> {{ reply.content }}
+        {% if reply.image %}
+            <img src="{{ reply.image.url }}" alt="Reply Image" style="max-width: 100%;">
+        {% endif %}
+
+        <!-- Like and Dislike buttons for the reply -->
+        <form method="post" action="{% url 'forum:like_reply' reply.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                Like ({{ reply.likes.count }})
+            </button>
+        </form>
+        <form method="post" action="{% url 'forum:dislike_reply' reply.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">
+                Dislike ({{ reply.dislikes.count }})
+            </button>
+        </form>
+
+        <!-- Edit, Delete, and Report buttons for the reply -->
+        <a href="{% url 'forum:edit_reply' reply.pk %}" class="btn btn-secondary">Edit</a>
+        <form method="post" action="{% url 'forum:delete_reply' reply.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <a href="{% url 'forum:report_content' 'reply' reply.pk %}" class="btn btn-warning">Report</a>
+
+        <!-- Reply to Reply -->
+        <button onclick="document.getElementById('replyFormReply{{ reply.id }}').style.display='block'">Reply</button>
+        <form method="post" enctype="multipart/form-data" style="display:none;" id="replyFormReply{{ reply.id }}">
+            {% csrf_token %}
+            {{ reply_form.content }}
+            {{ reply_form.image }}
+            <input type="hidden" name="reply_id" value="{{ reply.id }}">
+            <button type="submit" name="submit_reply">Post Reply</button>
+        </form>
+
+        <!-- Recursively include nested replies -->
+        {% include 'replies.html' with replies=reply.children.all %}
+    </li>
+    {% endfor %}
+</ul>

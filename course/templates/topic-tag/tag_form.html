@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.name.label_tag }} <!-- Assuming the form has a 'name' field -->
+            {{ form.name|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.topic.label_tag }} <!-- Assuming there's a topic field -->
+            {{ form.topic|add_class:"form-control" }}
+        </div>
+
+        <!-- Align the buttons on the same line and same height -->
+        <div class="form-group d-flex align-items-center mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'course:tag_list' %}" class="btn btn-secondary ms-3" style="margin-left: 0.5cm;">Back to Tag List</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

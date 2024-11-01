@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">{{ title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <!-- Save and Back to Topic List buttons aligned next to each other with a 2 cm space between them -->
+        <div class="form-group d-flex mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'course:topic_list' %}" class="btn btn-secondary ms-4" style="margin-left: 0.5cm;">Back to Topic List</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

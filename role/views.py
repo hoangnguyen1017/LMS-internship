@@ -3,31 +3,37 @@ from .models import Role
 from .forms import RoleForm, ExcelImportForm
 import pandas as pd
 from django.contrib import messages
-from module_group.models import ModuleGroup
+
+# from module_group.models import ModuleGroup
+
 from django.http import HttpResponse
 import openpyxl
 
 # Role views
-from functools import wraps
 
-def login_required(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        if not request.session.get('user_id'):
-            return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view
 
-@login_required
 def role_list(request):
     roles = Role.objects.all()  # Lấy danh sách các role
-    module_groups = ModuleGroup.objects.all()
+    # module_groups = ModuleGroup.objects.all()
 
     form = ExcelImportForm()
 
-    return render(request, 'role_list.html', {'module_groups': module_groups, 'roles': roles, 'form': form})
+    return render(request, 'role_list.html', { 'roles': roles, 'form': form})
+
+def insert_role(role_id, role_name):
+    try:
+        Role.objects.create(
+            role_id=role_id,
+            role_name=role_name
+        )
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
 
 def role_add(request):
+    
+
     if request.method == 'POST':
         form = RoleForm(request.POST)
         if form.is_valid():
@@ -35,9 +41,11 @@ def role_add(request):
             return redirect('role:role_list')
     else:
         form = RoleForm()
-    return render(request, 'role_form.html', {'form': form})
+    return render(request, 'role_form.html', {'form': form,})
 
 def role_edit(request, pk):
+    
+
     role = get_object_or_404(Role, pk=pk)
     if request.method == 'POST':
         form = RoleForm(request.POST, instance=role)
@@ -46,7 +54,9 @@ def role_edit(request, pk):
             return redirect('role:role_list')
     else:
         form = RoleForm(instance=role)
-    return render(request, 'role_form.html', {'form': form})
+
+    return render(request, 'role_form.html', {'form': form,})
+
 
 def role_delete(request, pk):
     role = get_object_or_404(Role, pk=pk)
@@ -119,3 +129,49 @@ def import_roles(request):
 
     return render(request, 'role_list.html', {'form': form})
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from user.models import Profile
+
+@login_required
+def select_role(request):
+    if request.method == 'POST':
+        selected_role_id = request.POST.get('role')
+        if selected_role_id:
+            try:
+                role = Role.objects.get(id=selected_role_id)
+                
+                # Lưu role vào session cho superuser
+                if request.user.is_superuser:
+                    request.session['temporary_role'] = role.id
+                    messages.success(request, "Role đã được lưu tạm thời.")
+                else:
+                    # Cập nhật role cho user không phải superuser (nếu cần)
+                    profile = Profile.objects.get(user=request.user)
+                    profile.role = role
+                    profile.save()
+                    messages.success(request, "Role đã được cập nhật.")
+                    
+            except Role.DoesNotExist:
+                messages.error(request, "Role không tồn tại.")
+            except Profile.DoesNotExist:
+                messages.error(request, "User này chưa có profile.")
+        else:
+            messages.warning(request, "Vui lòng chọn một role.")
+    return redirect('main:home')  # Chuyển hướng về trang chính hoặc trang bạn muốn
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def reset_role(request):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            # Xóa vai trò tạm thời khỏi session
+            if 'temporary_role' in request.session:
+                del request.session['temporary_role']
+                messages.success(request, "Role has been reset successfully.")
+            else:
+                messages.info(request, "No temporary role to reset.")
+        else:
+            messages.error(request, "You need to be logged in to reset your role.")
+
+    return redirect('main:home')  # Redirect về trang chính hoặc nơi bạn muốn

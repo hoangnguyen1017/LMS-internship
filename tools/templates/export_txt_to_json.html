@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Convert Text to JSON</h2>
+
+    <!-- Form for specifying number of text areas -->
+    <div class="row justify-content-center" id="file-number-form-container">
+        <div class="col-md-8">
+            <form id="file-number-form" class="border p-4 rounded shadow-sm bg-light">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="number_of_textareas">Number of text areas:</label>
+                    <input type="number" id="number_of_textareas" min="1" value="1" class="form-control form-control-sm">
+                </div>
+                <button type="button" id="generate-textareas" class="btn btn-primary mt-3">Generate</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Form for pasting text area contents, initially hidden -->
+    <div id="textareas-container" class="mt-4" style="display: none;"></div>
+
+    <!-- Submit form container, initially hidden -->
+    <div id="submit-form-container" class="mt-4" style="display: none;">
+        <button type="button" class="btn btn-success btn-block mt-4" onclick="downloadJSON()">Convert to JSON</button>
+    </div>
+
+    <!-- Display the success message and list of files if JSON files are generated -->
+    {% if success_message %}
+        <div class="mt-4">
+            <h3>Success!</h3>
+            <p>{{ success_message }}</p>
+            <p>Files created:</p>
+            <ul>
+                {% for file_name in file_names %}
+                    <li>{{ file_name }}</li>
+                {% endfor %}
+            </ul>
+            <a id="download-link" href="{{ download_url }}" class="btn btn-primary mt-2">Download All as ZIP</a>
+            <a href="{% url 'tools:export_txt_to_json' %}" class="btn btn-secondary mt-2">Refresh</a>
+        </div>
+
+        <!-- JavaScript to trigger download -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var downloadLink = document.getElementById('download-link');
+            if (downloadLink) {
+                downloadLink.click();
+            }
+        });
+        </script>
+    {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script>
+document.getElementById('generate-textareas').addEventListener('click', function() {
+    var numFiles = parseInt(document.getElementById('number_of_textareas').value, 10);
+    var textareasContainer = document.getElementById('textareas-container');
+    var textareasWrapper = document.createElement('div');
+    textareasWrapper.id = 'textareas-wrapper';
+    
+    // Clear any existing textareas
+    textareasContainer.innerHTML = '';
+
+    // Create the text areas for each text area
+    for (var i = 0; i < numFiles; i++) {
+        var textarea = document.createElement('textarea');
+        textarea.id = 'textarea_' + i;
+        textarea.rows = 5;
+        textarea.cols = 50;
+        textarea.placeholder = 'Enter text for JSON ' + (i + 1);
+        textarea.classList.add('form-control', 'mb-2', 'rounded');  // Add classes for styling
+        textareasWrapper.appendChild(textarea);
+    }
+
+    // Show the textareas and the submit button
+    textareasContainer.appendChild(textareasWrapper);
+    textareasContainer.style.display = 'block';
+    document.getElementById('submit-form-container').style.display = 'block';
+});
+
+// Function to convert text areas to JSON and download as zip
+function downloadJSON() {
+    const numberOfTextAreas = document.getElementById('number_of_textareas').value;
+    const zip = new JSZip();  // Create zip object
+
+    for (let i = 0; i < numberOfTextAreas; i++) {
+        const textarea = document.getElementById(`textarea_${i}`);
+        const textContent = textarea.value;
+        const jsonData = JSON.stringify({ content: textContent }, null, 2);
+
+        // Add JSON file to zip
+        zip.file(`data_${i + 1}.json`, jsonData);
+    }
+
+    // Generate and download zip file
+    zip.generateAsync({ type: 'blob' }).then(function(content) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = 'converted_text_to_json.zip';  // Name of the zip file
+        link.click();  // Trigger download
+    });
+}
+</script>
+
+{% endblock %}

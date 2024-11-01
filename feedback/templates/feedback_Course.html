@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Course Feedback{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Give Feedback for Course: {{ course.course_name }}</h2>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <!-- Criteria Ratings in Two Columns -->
+        <div class="row">
+            <!-- Left Column: 3 Criteria -->
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="courseMaterial" class="form-label">Course Material</label>
+                    {{ form.course_material|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="clarityOfExplanation" class="form-label">Clarity of Explanation</label>
+                    {{ form.clarity_of_explanation|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="courseStructure" class="form-label">Course Structure</label>
+                    {{ form.course_structure|add_class:"form-control" }}
+                </div>
+            </div>
+
+            <!-- Right Column: 2 Criteria -->
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="practicalApplications" class="form-label">Practical Applications</label>
+                    {{ form.practical_applications|add_class:"form-control" }}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="supportMaterials" class="form-label">Support Materials</label>
+                    {{ form.support_materials|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="form-group mb-3">
+            <label for="comments" class="form-label">Comments</label>
+            {{ form.comments|add_class:"form-control" }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Detail{% endblock %}
+
+{% block content %}
+<head>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<div class="container mt-4 text-center">
+    <h2>{{ quiz.quiz_title }}</h2>
+    <p class="small-description">{{ quiz.quiz_description }} - {{quiz.created_at}}</p>
+
+    <br>
+    <hr>
+    {% include 'nav_bar.html' %}
+    <hr>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card card-header">
+                <h5>Filter the Question</h5>
+            </div>
+            <div class="card card-body">
+                <h5>Input your search function or filter here</h5>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="row">
+                <!-- Cột hiển thị câu hỏi -->
+                <div class="col-md-6">
+                    <div class="card card-header">
+                        <h5>Questions</h5>
+                        <button type="button" class="btn btn-primary mt-2" onclick="toggleAddQuestionForm()">Add More Question</button>
+                    </div>
+                    <div class="card card-body">
+                        <div id="questionContainer">
+                            {% for question in questions %}
+                                <div onclick="showAddAnswerSection({{ question.id }})" style="cursor: pointer;">
+                                    {{ question.question_text }}
+                                </div>
+                                <hr>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Form để thêm câu hỏi mới -->
+                        <div id="addQuestionSection" style="display: none;">
+                            <h5>Add New Question</h5>
+                            <form method="POST" action="{% url 'quiz:question_add' quiz.id %}" id="addQuestionForm">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="newQuestionText">New Question:</label>
+                                    <input type="text" class="form-control" id="newQuestionText" name="question_text" required>
+                                </div>
+                                <button type="submit" class="btn btn-success mt-2">Submit Question</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Đường thẳng phân cách dọc -->
+                <div class="vertical-separator" style="width: 1px; background-color: #000; margin: 0 15px;"></div>
+
+                <!-- Cột thêm câu trả lời -->
+                <div class="col-md-5">
+                    <div class="card card-header">
+                        <h5>ADD ANSWER</h5>      
+                    </div>
+                    <div class="card-body" id="addAnswerSection" style="display: none;">
+                        <h5>Add Answer for Selected Question</h5>
+                        <form method="POST" action="{% url 'quiz:answer_option_add' 0 %}" id="addAnswerForm">
+                            {% csrf_token %}
+                            <div id="answerContainer">
+                                <div class="form-group answer-group">
+                                    <label for="answerText">Answer:</label>
+                                    <input type="text" class="form-control" id="answerText" name="answer_text[]" required>
+                
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="isCorrect" name="is_correct[]">
+                                        <label class="form-check-label" for="isCorrect">
+                                            Is Correct
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="questionId" name="question_id" value="">
+                            <button type="button" class="btn btn-primary mt-2" onclick="addMoreAnswer()">Add More Answer</button>
+                            <button type="submit" class="btn btn-success mt-2">Submit Answers</button>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    function showAddAnswerSection(questionId) {
+                        // Hiển thị phần thêm câu trả lời
+                        var addAnswerSection = document.getElementById('addAnswerSection');
+                        addAnswerSection.style.display = 'block';
+                
+                        // Gán giá trị của questionId vào input ẩn để gửi lên server
+                        document.getElementById('questionId').value = questionId;
+                
+                        // Cập nhật URL của form với questionId
+                        var form = document.getElementById('addAnswerForm');
+                        form.action = form.action.replace('0', questionId);
+                    }
+                
+                    function addMoreAnswer() {
+                        // Tạo phần tử mới cho câu trả lời bổ sung
+                        var answerContainer = document.getElementById('answerContainer');
+                        var newAnswerGroup = document.createElement('div');
+                        newAnswerGroup.classList.add('form-group', 'answer-group');
+                        newAnswerGroup.innerHTML = `
+                            <label for="answerText">Answer:</label>
+                            <input type="text" class="form-control" name="answer_text[]" required>
+                
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_correct[]">
+                                <label class="form-check-label">
+                                    Is Correct
+                                </label>
+                            </div>
+                        `;
+                        answerContainer.appendChild(newAnswerGroup);
+                    }
+
+                    function toggleAddQuestionForm() {
+                        // Hiện/ẩn phần form thêm câu hỏi
+                        var addQuestionSection = document.getElementById('addQuestionSection');
+                        addQuestionSection.style.display = (addQuestionSection.style.display === 'none' || addQuestionSection.style.display === '') ? 'block' : 'none';
+                    }
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

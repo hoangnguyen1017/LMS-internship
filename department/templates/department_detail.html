@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custome_filters %}
+
+{% block title %}Chi Tiết Phòng Ban{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Chi Tiết Phòng Ban</h1>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Thông tin phòng ban</h5>
+            <p><strong>Tên:</strong> {{ department.name }}</p>
+            <p><strong>Vị Trí:</strong> {{ department.location.name }}</p>
+            <p><strong>Địa chỉ:</strong> {{ department.location.address }}</p>
+            <p><strong>Người Dùng Liên Quan:</strong></p>
+            <ul>
+                {% for user in department.users.all %}
+                <li>{{ user.username }}</li>
+                {% endfor %}
+            </ul>
+            <div class="btn-group mt-3">
+                <a href="{% url 'department:department_update' department.pk %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Chỉnh Sửa
+                </a>
+                <a href="{% url 'department:department_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay Lại Danh Sách
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load course_filters %}
+
+{% block content %}
+<h2>Discussion{% if selected_course_id %} for {{ courses|get_selected_course_name:selected_course_id }}{% endif %}</h2>
+
+<!-- Filter Form -->
+<form method="get">
+    <div class="form-group">
+        <label for="course">Choose a Course:</label>
+        <select name="course_id" id="course" class="form-control" onchange="this.form.submit()">
+            <option value="">All Courses</option>
+            {% for course in courses %}
+            <option value="{{ course.id }}" {% if course.id == selected_course_id %}selected{% endif %}>
+                {{ course.course_name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="creator">Created by:</label>
+        <select name="creator_id" id="creator" class="form-control" onchange="this.form.submit()">
+            <option value="">All Creators</option>
+            {% for user in users %}
+            <option value="{{ user.id }}" {% if user.id == selected_creator_id %}selected{% endif %}>
+                {{ user.username }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+    </div>
+    <div class="form-group">
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'forum:question_list' %}" class="btn btn-secondary">Clear Filter</a>
+</form>
+
+<!-- Add Question Button -->
+<div class="mb-3">
+
+    <a href="{% url 'forum:create_question' %}" class="btn btn-primary">Add Question</a>
+</div>
+
+<!-- Display paginated questions -->
+<ul>
+    {% for question in page_obj %}
+    <li>
+        <a href="{% url 'forum:question_detail' question.pk %}">{{ question.title }}</a>
+    </li>
+    {% empty %}
+    <li>No questions available for the selected criteria.</li>
+    {% endfor %}
+</ul>
+
+<!-- Pagination controls -->
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?{% if selected_course_id %}course_id={{ selected_course_id }}&{% endif %}{% if selected_creator_id %}creator_id={{ selected_creator_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?{% if selected_course_id %}course_id={{ selected_course_id }}&{% endif %}{% if selected_creator_id %}creator_id={{ selected_creator_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Assessment{% endblock %}
+
+{% block content %}
+<style>
+    .exercise-item.selected {
+        background-color: #d1ecf1;
+        border-left: 4px solid #0c5460;
+    }
+</style>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">{% if assessment %}Edit Assessment{% else %}Create New Assessment{% endif %}</h2>
+
+    {% if assessment.id %}
+    <a href="{% url 'assessment:take_assessment' assessment_id=assessment.id %}" class="btn btn-secondary">Prievew Assessment</a>
+    
+    {% endif %}
+
+    <form method="POST" id="assessment-form" class="mb-5">
+        {% csrf_token %}
+
+        <!-- Assessment Details Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4>Assessment Details</h4>
+            </div>
+            <div class="card-body">
+
+                <div class="form-row">
+                    <div class="col-md-4">
+                        <label for="id_title" class="form-label col-md-5">Title</label> <!-- Changed to col-md-12 -->
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8"> 
+                        <label for="id_course" class="form-label col-md-5">Course</label> <!-- Changed to col-md-12 -->
+                        <div class="col-md-9">  <!-- Allocated more space for the course field -->
+                            {{ form.course }} <!-- Make the input larger using Bootstrap class -->
+                            {% if form.course.errors %}
+                                <div class="text-danger">{{ form.course.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="form-row">
+                    <div class="col-md-4">
+                        <label for="id_assessment_type" class="form-label col-md-7">Assessment Type</label>
+                        {{ form.assessment_type }}
+                        {% if form.assessment_type.errors %}
+                            <div class="text-danger">{{ form.assessment_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_total_score" class="form-label col-md-8">Total Score</label>
+                        {{ form.total_score }}
+                        {% if form.total_score.errors %}
+                            <div class="text-danger">{{ form.total_score.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_qualify_score" class="form-label col-md-8">Minimum Score</label>
+                        {{ form.qualify_score }}
+                        {% if form.qualify_score.errors %}
+                            <div class="text-danger">{{ form.qualify_score.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="id_time_limit" class="form-label col-md-8">Time Limit</label>
+                        {{ form.time_limit }}
+                        {% if form.time_limit.errors %}
+                            <div class="text-danger">{{ form.time_limit.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>           
+            </div>
+            
+        </div>
+
+        <!-- Tab Section for Exercises and Questions -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h4>Select Exercises and Questions</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="exerciseQuestionTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="exercises-tab" data-bs-toggle="tab" href="#exercises" role="tab" aria-controls="exercises" aria-selected="true">Exercises</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="questions-tab" data-bs-toggle="tab" href="#questions" role="tab" aria-controls="questions" aria-selected="false">Questions</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="exerciseQuestionTabContent">
+                    <!-- Exercises Tab -->
+                    <div class="tab-pane fade show active" id="exercises" role="tabpanel" aria-labelledby="exercises-tab">
+                        <div class="row">
+                            <!-- Exercise List Section -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="search-exercises" class="form-label">Search Exercises</label>
+                                    <input type="text" id="search-exercises" class="form-control" placeholder="Search for exercises..." onkeyup="filterExercises()">
+                                </div>
+                                <div class="exercise-list" id="exercise-list" style="height: 300px; overflow-y: auto; border: 1px solid #ccc;">
+                                    {% for exercise in exercises %}
+                                        <div class="exercise-item" style="cursor: pointer; padding-left: 10px;">
+                                            <input type="checkbox" name="exercises" value="{{ exercise.id }}" id="exercise-{{ exercise.id }}" 
+                                                {% if exercise.id in selected_exercises %}checked{% endif %}>
+                                            <label for="exercise-{{ exercise.id }}">{{ exercise.title }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Exercise Preview Section -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="mb-3">
+                                        <label for="search-exercises2" class="form-label">Preview Selected Exercise</label>
+                                        <input type="text" id="search-exercises2" class="form-control" placeholder="Search for exercises..." >
+                                    </div>
+                                    
+                                    <div id="exercise-content" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                                        <p>Select an exercise from the list to preview its content here.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Tab -->
+                    <div class="tab-pane fade" id="questions" role="tabpanel" aria-labelledby="questions-tab">
+                        <div class="row">
+                            <!-- Question List Section -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="search-questions" class="form-label">Search Questions</label>
+                                    <input type="text" id="search-questions" class="form-control" placeholder="Search for questions..." onkeyup="filterQuestions()">
+                                </div>
+                                <div class="question-content" id="question-content" style="height: 300px; overflow-y: auto; border: 1px solid #ccc;">
+                                    {% for question in questions %}
+                                        <div class="question-item d-flex justify-content-between align-items-center" style="cursor: pointer;">
+                                            <label for="question-{{ question.id }}">{{ forloop.counter }}. {{ question.question_text }}</label>
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="addQuestion('{{ question.id }}', '{{ question.question_text }}')" aria-label="Add Question">
+                                                <i class="fas fa-plus"></i> <!-- Font Awesome Plus Icon -->
+                                            </button>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Selected Questions Section -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="selected-questions-list" class="form-label">Selected Questions</label>
+                                    <input type="text" id="search-selected-questions" class="form-control" placeholder="Search for selected questions..." onkeyup="filterSelectedQuestions()">
+                                </div>
+                               
+                                <ul id="selected-questions-list" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; list-style-type: disc;">
+                                    {% if selected_questions %}
+                                        {% for question in selected_questions %}
+                                            <li class="selected-question-item d-flex justify-content-between align-items-center" style="cursor: pointer;" data-id="{{ question.id }}">
+                                                <span class="question-text">{{ forloop.counter }}. {{ question.question_text }}</span>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="removeQuestion('{{ question.id }}')" aria-label="Remove Question">
+                                                    <i class="fas fa-minus"></i> <!-- Font Awesome Minus Icon -->
+                                                </button>
+                                            </li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>No questions selected yet.</li>
+                                    {% endif %}
+                                </ul>
+                                <input type="hidden" name="selected_questions" id="selected-questions" value="{% for question in selected_questions %}{{ question.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-success">Save Assessment</button>
+            <a href="{% url 'assessment:assessment_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </form>
+</div>
+
+
+<script>
+
+// Function to filter exercises in the list
+function filterExercises() {
+    const input = document.getElementById('search-exercises').value.toLowerCase();
+    const exercises = document.querySelectorAll('.exercise-item');
+    exercises.forEach(exercise => {
+        const label = exercise.querySelector('label').textContent.toLowerCase();
+        exercise.style.display = label.includes(input) ? 'block' : 'none';
+    });
+}
+
+function filterQuestions() {
+    const input = document.getElementById('search-questions').value.toLowerCase(); // Get search input
+    const questions = document.querySelectorAll('.question-item'); // Select all question items
+
+    console.log("Search Input:", input); // Log the search input for debugging
+
+    // Iterate through each question item
+    questions.forEach(question => {
+        const label = question.querySelector('label').textContent.toLowerCase();
+        question.style.display = label.includes(input) ? 'block' : 'none';
+       
+        // Check if the questionText includes the input value
+        if (label.toLowerCase().includes(input.toLowerCase().trim())) {
+            console.log("Match Found:", label); // Log each question text
+            question.style.display = 'block'; // Show the question if it matches
+        } else {
+            console.log("No Match:", label); // Log each question text
+            question.style.display = 'none'; // Hide the question if it doesn't match
+        }
+
+    });
+}
+
+function addQuestion(id, text) {
+    // Get the selected questions div and input field
+    const selectedQuestionsList = document.getElementById('selected-questions-list');
+    const selectedQuestionsInput = document.getElementById('selected-questions');
+
+    // Split the value into an array of selected question IDs
+    let selectedQuestions = selectedQuestionsInput.value ? selectedQuestionsInput.value.split(',') : [];
+
+    // Check if this question is already added
+    if (!selectedQuestions.includes(id)) {
+        // Create the question item element
+        const questionItem = document.createElement('li');
+        questionItem.classList.add('selected-question-item', 'd-flex', 'justify-content-between', 'align-items-center');
+        questionItem.setAttribute('data-id', id);
+        questionItem.innerHTML = `
+            <span>${text}</span>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeQuestion('${id}')">
+                <i class="fas fa-minus"></i> <!-- Font Awesome Minus Icon -->
+            </button>
+        `;
+
+        // Add the question to the right section
+        selectedQuestionsList.appendChild(questionItem);
+
+        // Add the question ID to the array
+        selectedQuestions.push(id);
+        
+        // Update the hidden input with the selected question IDs (comma-separated)
+        selectedQuestionsInput.value = selectedQuestions.join(',');
+        
+        // Debugging log to check the hidden input value
+        console.log("Selected Questions (after addition):", selectedQuestionsInput.value);
+    } else {
+        console.log("Question already added:", id);
+    }
+}
+
+// Function to remove a question
+function removeQuestion(id) {
+    // Get the selected questions div and input field
+    const selectedQuestionsList = document.getElementById('selected-questions-list');
+    const selectedQuestionsInput = document.getElementById('selected-questions');
+
+    // Remove the question from the right section
+    const questionItem = selectedQuestionsList.querySelector(`[data-id='${id}']`);
+    if (questionItem) {
+        questionItem.remove();
+    }
+
+    // Update the hidden input to remove the question ID
+    let selectedQuestions = selectedQuestionsInput.value.split(',');
+    selectedQuestions = selectedQuestions.filter(qid => qid !== id);
+    selectedQuestionsInput.value = selectedQuestions.join(',');
+
+    // If no questions left, display a message
+    if (selectedQuestions.length === 0) {
+        selectedQuestionsList.innerHTML = '<li>No questions selected yet.</li>';
+    }
+
+    // Update numbering
+    updateNumbering();
+}
+  
+
+
+ // Function to filter selected questions based on the search input
+function filterSelectedQuestions() {
+    const searchInput = document.getElementById('search-selected-questions').value.toLowerCase();
+    const questionItems = document.querySelectorAll('#selected-questions-list .selected-question-item');
+    
+    questionItems.forEach(item => {
+        const questionText = item.querySelector('.question-text').textContent.toLowerCase();
+        item.style.display = questionText.includes(searchInput) ? '' : 'none';  // Show or hide based on the search input
+    });
+}
+
+
+
+</script>
+{% endblock %}

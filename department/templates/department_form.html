@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load user_form_filters %}
+{% block title %}{{ form.instance.pk|yesno:"Edit Department, Add Department" }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg p-4 bg-light rounded">
+        <h2 class="text-center text-danger mb-4 display-4">
+            {% if form.instance.pk %}
+                <i class="fas fa-edit"></i> Edit Department
+            {% else %}
+                <i class="fas fa-plus"></i> Add Department
+            {% endif %}
+        </h2>        
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label class="h5 font-weight-bold text-dark">{{ form.name.label }}</label>
+                {{ form.name|add_class:"form-control form-control-lg" }}
+                {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.name.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-4">
+                <label class="h5 font-weight-bold text-dark">{{ form.location.label }}</label>
+                {{ form.location|add_class:"form-control form-control-lg" }}
+                {% if form.location.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.location.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="id_users" class="h5 font-weight-bold text-dark">Users</label>
+                    <input type="text" class="form-control mb-2 form-control-lg" id="userSearch" placeholder="Search users...">
+                    <div class="border rounded scrollable-list" id="userList" style="max-height: 120px; overflow-y: auto;">
+                        {{ form.users }}  <!-- Hiển thị danh sách người dùng trong hộp cuộn -->
+                    </div>
+                </div>
+            
+                <div class="col-md-6">
+                    <label for="id_courses" class="h5 font-weight-bold text-dark">Courses</label>
+                    <input type="text" class="form-control mb-2 form-control-lg" id="courseSearch" placeholder="Search courses...">
+                    <div class="border rounded scrollable-list" id="courseList" style="max-height: 120px; overflow-y: auto;">
+                        {{ form.courses }}  <!-- Hiển thị danh sách khóa học trong hộp cuộn -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center mt-4">
+                <button type="submit" class="btn btn-danger btn-lg me-2">Save</button>
+                <a href="{% url 'department:department_list' %}" class="btn btn-secondary btn-lg">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // JavaScript for filtering users
+    document.getElementById('userSearch').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let users = document.getElementById('userList').getElementsByTagName('label');
+        Array.from(users).forEach(function(user) {
+            let text = user.textContent || user.innerText;
+            user.style.display = text.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
+        });
+    });
+
+    // JavaScript for filtering courses
+    document.getElementById('courseSearch').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let courses = document.getElementById('courseList').getElementsByTagName('label');
+        Array.from(courses).forEach(function(course) {
+            let text = course.textContent || course.innerText;
+            course.style.display = text.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

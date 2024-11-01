@@ -10,4 +10,6 @@ urlpatterns = [
     path('roles/delete/<int:pk>/', views.role_delete, name='role_delete'),
     path('import/', views.import_roles, name='import_roles'),
     path('export/', views.export_roles, name='export_roles'),
+    path('select-role/', views.select_role, name='select_role'),
+    path('reset-role/', views.reset_role, name='reset_role'),
 ]

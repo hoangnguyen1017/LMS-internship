@@ -23,6 +23,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Role Name</th>
                 <th>Actions</th>
             </tr>
@@ -30,6 +31,7 @@
         <tbody>
             {% for role in roles %}
             <tr>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ role.role_name }}</td>
                 <td>
                     <a href="{% url 'role:role_edit' role.pk %}" class="btn btn-warning btn-sm">Edit</a>

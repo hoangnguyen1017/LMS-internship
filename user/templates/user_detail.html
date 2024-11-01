@@ -1,69 +1,202 @@
 {% extends 'base.html' %}
-
-{% block title %}{{ user.username }} Details{% endblock %}
+{% block title %}{{ user.first_name }} {{ user.last_name }} | Profile{% endblock %}
+{% load custome_filters %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Details</h2>
+<div class="container-fluid mt-5">
     <div class="row">
-        <!-- User Information Card -->
-        <div class="col-md-6">
-            <div class="card p-3 mb-4">
-                <h3 class="card-title">Information</h3>
-                <div class="card-body">
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Full Name:</strong> {{ user.full_name }}</p>
-                    <p><strong>Role:</strong> {{ user.role }}</p>
-                    <p><strong>Profile Picture:</strong></p>
-                    {% if user.profile_picture_url %}
-                        <img src="{{ user.profile_picture_url }}" alt="Profile Picture" class="img-fluid" width="150">
-                    {% else %}
-                        <p>No profile picture available</p>
-                    {% endif %}
-                    <p><strong>Created At:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
-                    <p><strong>Updated At:</strong> {{ user.updated_at|date:"Y-m-d H:i" }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- User Profile Card -->
-        <div class="col-md-6">
-            <div class="card p-3 mb-4">
-                <h3 class="card-title">Profile</h3>
-                <div class="card-body">
-                    {% if profile %}
-                        <p><strong>Bio:</strong> {{ profile.bio }}</p>
-                        <p><strong>Interests:</strong> {{ profile.interests }}</p>
-                        <p><strong>Learning Style:</strong> {{ profile.learning_style }}</p>
-                        <p><strong>Preferred Language:</strong> {{ profile.preferred_language }}</p>
-                    {% else %}
-                        <p>This user does not have a profile.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Personalization Card -->
-    <div class="card p-3 mb-4">
-        <h3 class="card-title">Personalization</h3>
-        <div class="card-body">
-            {% if personalization %}
-                <p><strong>Recommended Courses:</strong> {{ personalization.recommended_courses }}</p>
-                <p><strong>Personalized Learning Path:</strong> {{ personalization.personalized_learning_path }}</p>
-                <p><strong>Learning Style:</strong> {{ personalization.learning_style }}</p>
+        <div class="col-md-3">
+    <div class="bg-white text-black p-3 rounded text-center position-fixed" style="max-width: 400px; height: 300px;">
+        <div class="avatar-wrapper mb-3 d-flex justify-content-center align-items-center" 
+            style="width: 100px; height: 100px; overflow: hidden; margin: 0 auto;">
+            {% if user.profile.profile_picture_url and user.profile.profile_picture_url != "http://127.0.0.1:8000/user/add/" %}
+                <img src="{{ user.profile.profile_picture_url }}" class="img-fluid rounded-circle" style="max-width: 100%; max-height: 100%; object-fit: cover;">
             {% else %}
-                <p><strong>This user does not have personalization data.</strong></p>
+                <i class="fas fa-user img-fluid rounded-circle" style="font-size: 70px;"></i>
             {% endif %}
         </div>
-    </div>    
 
-    <!-- Action Buttons -->
-    <div class="mt-4">
-        <a href="{% url 'user:user_edit' user.pk %}" class="btn btn-warning">Edit</a>
-        <a href="{% url 'user:user_delete' user.pk %}" class="btn btn-danger">Delete</a>
-        <a href="{% url 'user:user_list' %}" class="btn btn-secondary">Back to User List</a>
+        <h4 class="mb-4 text-truncate" style="font-size: 1rem; width: 250px; white-space: nowrap; overflow: hidden;">{{ user.first_name }} {{ user.last_name }}</h4>
+
+
+
+        <ul class="list-group">
+            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
+                <a href="#profileCard" class="text-black d-flex align-items-center w-100">
+                    <i class="fas fa-user blink-icon me-2"></i>
+                    <span>PROFILE</span>
+                </a>
+            </li>
+            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
+                <a href="#CourseCard" class="text-black d-flex align-items-center w-100">
+                    <i class="fas fa-book blink-icon me-2"></i>
+                    <span>COURSES</span>
+                </a>
+            </li>
+            {% if is_student %}
+                <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
+                    <a href="#quizResultsCard" class="text-black d-flex align-items-center w-100">
+                        <i class="fas fa-pencil-alt blink-icon me-2"></i>
+                        <span>QUIZ RESULTS</span>
+                    </a>
+                </li>
+            {% endif %}
+            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
+                <a href="#activityLogCard" class="text-black d-flex align-items-center w-100">
+                    <i class="fas fa-history blink-icon me-2"></i>
+                    <span>ACTIVITY LOG</span>
+                </a>
+            </li>
+            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
+                <a href="#editPasswordCard" class="text-black d-flex align-items-center w-100" onclick="togglePasswordForm(event)">
+                    <i class="fas fa-edit blink-icon me-2"></i>
+                    <span>EDIT PROFILE</span>
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
+
+        
+        
+
+        <div class="col-md-9">
+            <div class="card mb-4" id="profileCard">
+                <div class="card-header bg-white text-black text-center">
+                    <strong>Profile</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6 text-start"><strong>ID:</strong>
+                            {% if is_student %}
+                                {{ student_code }}
+                            {% else %}
+                                {{ user.id }}
+                            {% endif %}
+                        </div>
+                        <div class="col-6 text-start"><strong>Username:</strong> {{ user.username }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6 text-start"><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</div>
+                        <div class="col-6 text-start"><strong>Role:</strong> {{ user.profile.role.role_name|default:"N/A" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12 text-start"><strong>Email:</strong> {{ user.email }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12 text-start"><strong>Bio:</strong> {{ user.profile.bio|default:"N/A" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12 text-start"><strong>Interests:</strong> {{ user.profile.interests|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4" id="CourseCard">
+                <div class="card-header bg-white text-black text-center">
+                    <strong>Courses Enrolled</strong>
+                </div>
+                <div class="card-body">
+                    {% if enrollments %}
+                        <ul class="list-group">
+                            {% for enrollment in enrollments %}
+                                <li class="list-group-item">
+                                    <span class="fw-bold"> {{ enrollment.course }}</span> - 
+                                    <span class="fst-italic">Enrollment Date: {{ enrollment.date_enrolled|date:"H:i d-m-Y" }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No courses enrolled.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if is_student %}
+                <div class="card mb-4" id="quizResultsCard">
+                    <div class="card-header bg-white text-black text-center">
+                        <strong>Quiz Results</strong>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped w-100">
+                            <thead>
+                                <tr>
+                                    <th>Quiz Title</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in quiz_results %}
+                                <tr>
+                                    <td>{{ attempt.quiz.quiz_title }}</td>
+                                    <td>{{ attempt.score }} / {{ attempt.quiz.total_marks }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">No quiz attempts found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card mb-4" id="activityLogCard">
+                <div class="card-header bg-white text-black text-center">
+                    <strong>User Activity Log</strong>
+                </div>
+                <div class="card-body activity-log" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th>Activity Type</th>
+                                <th>Details</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in activity_logs %}
+                                <tr>
+                                    <td>{{ log.get_activity_type_display }}</td>
+                                    <td>{{ log.activity_details }}</td>
+                                    <td>{{ log.activity_timestamp }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3">No activity records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            
+            <div class="card mb-4" id="editPasswordCard">
+                <div class="card-header bg-white text-black d-flex justify-content-between align-items-center">
+                    <strong>Edit Profile</strong>
+                </div>
+                <div class="card-body">
+                    <div id="password-form" style="display: none;">
+                        <form method="POST" action="{% url 'user:user_edit_password' user.pk %}" class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <input type="password" class="form-control me-2" id="old_password" name="old_password" placeholder="Enter your password to proceed" required>
+                            <button type="submit" class="btn btn-warning">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePasswordForm(event) {
+        event.preventDefault();
+        var form = document.getElementById('password-form');
+        form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
+        document.getElementById('editPasswordCard').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
 {% endblock %}

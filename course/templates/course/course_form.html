@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load form_filters %}
+{% load static %}
+
+{% block title %}{{ form.instance.pk|yesno:"Edit Course,Add New Course" }}{% endblock %}
+
+{% block content %}
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{% static 'course/course.css' %}">
+</head>
+<body id="course-form">
+<div class="container">
+    <h2 class="text-center font-weight-bold mb-4">{{ form.instance.pk|yesno:"Edit Course,Add New Course" }}</h2>
+    <form method="post" class="mt-4" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="course_name" class="font-weight-bold">{{ course_form.course_name.label }}</label>
+                {{ course_form.course_name|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-6">
+                <label for="course_code" class="font-weight-bold">{{ course_form.course_code.label }}</label>
+                {{ course_form.course_code|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-6">
+                <label for="creator" class="font-weight-bold">{{ course_form.creator.label }}</label>
+                {{ course_form.creator|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-6">
+                <label for="instructor" class="font-weight-bold">{{ course_form.instructor.label }}</label>
+                {{ course_form.instructor|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-6">
+                <label for="{{ course_form.image.id_for_label }}" class="font-weight-bold">{{ course_form.image.label }}</label>
+                {{ course_form.image|add_class:"form-control" }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="description" class="font-weight-bold">{{ course_form.description.label }}</label>
+            {{ course_form.description|add_class:"form-control description-input" }}
+        </div>
+
+        <!-- Session and Prerequisite Fields -->
+        <h3 class="font-weight-bold mt-4">Session Information</h3>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="session_name" class="font-weight-bold">{{ session_form.session_name.label }}</label>
+                {{ session_form.session_name|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-6">
+                <label for="session_quantity" class="font-weight-bold">{{ session_form.session_quantity.label }}</label>
+                {{ session_form.session_quantity|add_class:"form-control" }}
+            </div>
+        </div>
+        <h3 class="font-weight-bold mt-4">Prerequisite Courses</h3>
+        <div class="form-group">
+            <select name="prerequisite_courses[]" class="form-control select2" multiple>
+                {% for course in all_courses %}
+                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="button-group text-right mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'course:course_list' %}" class="btn btn-secondary">Back to Course List</a>
+        </div>
+    </form>
+</div>
+</body>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "Select prerequisite courses",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

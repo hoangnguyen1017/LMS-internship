@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Question</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if form.instance.image %}
+        <img src="{{ form.instance.image.url }}" alt="Question Image" style="max-width: 100%;">
+        <label for="image-clear">Clear image:</label>
+        <input type="checkbox" name="image-clear" id="image-clear">
+    {% endif %}
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}

@@ -4,7 +4,29 @@ from .forms import LearningPathForm, StepForm
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from module_group.models import ModuleGroup
 
+
+@login_required
+def learning_path_list(request):
+    learning_paths = LearningPath.objects.all()
+
+    # Create a context with enrolled_count for each learning path
+    learning_path_data = []
+    for learning_path in learning_paths:
+        enrolled_count = learning_path.enrolled_users.count()  # Count enrolled users
+        learning_path_data.append({
+            'learning_path': learning_path,
+            'enrolled_count': enrolled_count,  # Include enrolled count in the data
+        })
+
+    module_groups = ModuleGroup.objects.all()
+    return render(request, 'learning_path/list.html', 
+        {
+            'module_groups': module_groups,
+            'learning_path_data': learning_path_data,
+         
+        })
 
 @login_required
 def enroll(request, learning_path_id):
@@ -65,21 +87,7 @@ def recommend(request, learning_path_id):
     return redirect('learning_path:step_list', learning_path_id=learning_path.id)
 
 
-def learning_path_list(request):
-    learning_paths = LearningPath.objects.all()
-
-    # Create a context with enrolled_count for each learning path
-    learning_path_data = []
-    for learning_path in learning_paths:
-        enrolled_count = learning_path.enrolled_users.count()  # Count enrolled users
-        learning_path_data.append({
-            'learning_path': learning_path,
-            'enrolled_count': enrolled_count,  # Include enrolled count in the data
-        })
-
-    return render(request, 'learning_path/list.html', {'learning_path_data': learning_path_data})
-
-
+@login_required
 def learning_path_edit(request, pk):
     learning_path = get_object_or_404(LearningPath, pk=pk)
     if request.method == 'POST':
@@ -91,6 +99,7 @@ def learning_path_edit(request, pk):
         form = LearningPathForm(instance=learning_path, user=request.user)  # Pass the current user
     return render(request, 'learning_path/form.html', {'form': form})
 
+@login_required
 def learning_path_add(request):
     if request.method == 'POST':
         form = LearningPathForm(request.POST, user=request.user)  # Pass the current user
@@ -102,6 +111,7 @@ def learning_path_add(request):
     return render(request, 'learning_path/form.html', {'form': form})
 
 
+@login_required
 def learning_path_delete(request, pk):
     learning_path = get_object_or_404(LearningPath, pk=pk)
     if request.method == 'POST':
@@ -109,6 +119,7 @@ def learning_path_delete(request, pk):
         return redirect('learning_path:learning_path_list')
     return render(request, 'learning_path/confirm_delete.html', {'learning_path': learning_path})
 
+@login_required
 def step_list(request, learning_path_id):
     # Retrieve the selected learning path and its steps
     learning_path = get_object_or_404(LearningPath, pk=learning_path_id)
@@ -123,7 +134,7 @@ def step_list(request, learning_path_id):
         'learning_paths': all_learning_paths  # Pass all learning paths for sidebar display
     })
 
-
+@login_required
 def step_add(request, learning_path_id):
     learning_path = get_object_or_404(LearningPath, pk=learning_path_id)
     if request.method == 'POST':
@@ -138,7 +149,7 @@ def step_add(request, learning_path_id):
         form = StepForm()
     return render(request, 'step/form.html', {'form': form, 'learning_path': learning_path})
 
-
+@login_required
 def step_edit(request, learning_path_id, pk):
     step = get_object_or_404(Step, pk=pk)
     if request.method == 'POST':
@@ -153,7 +164,7 @@ def step_edit(request, learning_path_id, pk):
         form = StepForm(instance=step)
     return render(request, 'step/form.html', {'form': form, 'learning_path': step.learning_path})
 
-
+@login_required
 def step_delete(request, learning_path_id, pk):
     step = get_object_or_404(Step, pk=pk)
     if request.method == 'POST':

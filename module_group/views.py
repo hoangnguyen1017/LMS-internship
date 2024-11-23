@@ -4,17 +4,35 @@ from .models import Module, ModuleGroup
 from .forms import ModuleForm, ModuleGroupForm, ExcelImportForm
 import pandas as pd
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
 # ModuleGroup views
+
+@login_required
 def module_group_list(request):
-    module_groups = ModuleGroup.objects.all()
+    # Get the search query from the request
+    search_query = request.GET.get('search', '')
+    
+    # Filter module groups based on the search query
+    if search_query:
+        module_groups = ModuleGroup.objects.filter(group_name__icontains=search_query)
+    else:
+        module_groups = ModuleGroup.objects.all()
+
     form = ExcelImportForm()
 
-    return render(request, 'module_group_list.html', {'module_groups': module_groups, 'form': form})
+    return render(request, 'module_group_list.html', {
+        'module_groups': module_groups,
+        'form': form,
+        'search': search_query  # Pass the search query to the template
+    })
 
+@login_required
 def module_group_detail(request, pk):
     module_group = get_object_or_404(ModuleGroup, pk=pk)
     return render(request, 'module_group_detail.html', {'module_group': module_group})
 
+@login_required
 def module_group_add(request):
     if request.method == 'POST':
         form = ModuleGroupForm(request.POST)
@@ -28,7 +46,7 @@ def module_group_add(request):
         form = ModuleGroupForm()
     return render(request, 'module_group_form.html', {'form': form})
 
-
+@login_required
 def module_group_edit(request, pk):
     module_group = get_object_or_404(ModuleGroup, pk=pk)
     if request.method == 'POST':
@@ -40,6 +58,7 @@ def module_group_edit(request, pk):
         form = ModuleGroupForm(instance=module_group)
     return render(request, 'module_group_form.html', {'form': form})
 
+@login_required
 def module_group_delete(request, pk):
     module_group = get_object_or_404(ModuleGroup, pk=pk)
     if request.method == 'POST':
@@ -49,6 +68,8 @@ def module_group_delete(request, pk):
 # export excel
 from django.http import HttpResponse
 import openpyxl
+
+@login_required
 def export_module_groups(request):
     # Create a workbook and add a worksheet
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -69,6 +90,7 @@ def export_module_groups(request):
     workbook.save(response)
     return response
 
+@login_required
 def import_module_groups(request):
     if request.method == 'POST':
         
@@ -113,6 +135,7 @@ def import_module_groups(request):
     return render(request, 'module_group_list.html', {'form': form})
 
 # MODULE
+@login_required
 def import_modules(request):
     if request.method == 'POST':
         form = ExcelImportForm(request.POST, request.FILES)
@@ -166,7 +189,7 @@ def import_modules(request):
 
     return render(request, 'module_list.html', {'form': form})
 
-
+@login_required
 def export_modules(request):
     # Create a workbook and add a worksheet
     print('come here modules')
@@ -188,16 +211,32 @@ def export_modules(request):
     workbook.save(response)
     return response
 
+@login_required
 def module_list(request):
     module_groups = ModuleGroup.objects.all()
-    modules = Module.objects.all()
-    form = ExcelImportForm()
-    return render(request, 'module_list.html', {'module_groups': module_groups,'modules': modules, 'form': form})
+    search_query = request.GET.get('search', '')  # Get the search query from GET parameters
 
+    # Filter modules based on the search query
+    if search_query:
+        modules = Module.objects.filter(module_name__icontains=search_query)  
+    else:
+        modules = Module.objects.all()
+        
+    form = ExcelImportForm()
+    
+    return render(request, 'module_list.html', {
+        'module_groups': module_groups,
+        'modules': modules,
+        'form': form,
+        'search_query': search_query  # Pass the search query to the template
+    })
+
+@login_required
 def module_detail(request, pk):
     module = get_object_or_404(Module, pk=pk)
     return render(request, 'module_detail.html', {'module': module})
 
+@login_required
 def module_add(request):
     if request.method == 'POST':
         form = ModuleForm(request.POST)
@@ -208,6 +247,7 @@ def module_add(request):
         form = ModuleForm()
     return render(request, 'module_form.html', {'form': form})
 
+@login_required
 def module_edit(request, pk):
     module = get_object_or_404(Module, pk=pk)
     if request.method == 'POST':
@@ -219,6 +259,7 @@ def module_edit(request, pk):
         form = ModuleForm(instance=module)
     return render(request, 'module_form.html', {'form': form})
 
+@login_required
 def module_delete(request, pk):
     module = get_object_or_404(Module, pk=pk)
     if request.method == 'POST':

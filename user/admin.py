@@ -9,7 +9,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from .models import User, Profile, Role, Student
+from .models import User, Profile, Role, Student, Instructor
 
 #Resource cho User
 class UserProfileResource(resources.ModelResource):
@@ -119,6 +119,8 @@ class UserProfileResource(resources.ModelResource):
             # Nếu vai trò là "student", thêm vào bảng Student với student_code
             if role_name.lower() == 'student':
                 Student.objects.update_or_create(user=user, defaults={'student_code': student_code})
+            if role_name.lower() == 'instructor':
+                Instructor.objects.update_or_create(user=user)
 
 class ProfileInline(admin.StackedInline):
     model = Profile

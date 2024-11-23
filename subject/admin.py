@@ -77,7 +77,7 @@ class MaterialResource(resources.ModelResource):
 
     class Meta:
         model = Material
-        fields = ('id', 'lesson__title', 'material_type', 'file', 'uploaded_at')  # Fields to be imported/exported
+        fields = ('id', 'lesson','lesson__title', 'material_type', 'file', 'uploaded_at')  # Fields to be imported/exported
 
 # Register Material with import/export functionality
 @admin.register(Material)

@@ -117,15 +117,14 @@ def submit_code(request, exercise_id, assessment_id):
             # Set user or email depending on the context
             if request.user.is_authenticated:
                 submission.user = request.user  # Associate submission with the authenticated user
+                submission.email = request.user.email
             else:
                 submission.email = email  # Set email for anonymous submissions
 
-            # Save the submission
-            submission.save()
 
             # Grade the submission and save the score
             result = grade_submission(submission)
-            submission.score = result['score']
+            submission.score = result
             submission.save()
 
             return redirect('exercises:result_detail', submission_id=submission.id)
@@ -213,7 +212,5 @@ def precheck_code(request, exercise_id):
         language = data.get('language')
         test_cases = json.loads(exercise.test_cases)        # Assuming test_cases are stored in JSON format  
         result = precheck(code, language, test_cases)
-        return JsonResponse({'passed_tests': result['passed_tests'],
-                            'hide_test_cases': result['hide_test_cases'],
-                            })
+        return JsonResponse({'combined_message': result['combined_message']})
     return HttpResponseBadRequest("Invalid request")

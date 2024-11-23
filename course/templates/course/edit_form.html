@@ -11,13 +11,16 @@
     <link rel="stylesheet" type="text/css" href="{% static 'course/course.css' %}">
 </head>
 <body id="edit-form">
-<div class="container mx-auto p-8 bg-white rounded-lg shadow-xl">
+<div class="custom-container mx-auto p-8 bg-white rounded-lg shadow-xl">
     <h2 class="text-2xl font-semibold text-teal-600 mb-4 main-color-text">Edit {{ course.course_name }}</h2>
         <div class="tab-container">
             <div class="tab">
                 <button class="tablinks" onclick="openTab(event, 'Tab1')">Detail</button>
                 <button class="tablinks" onclick="openTab(event, 'Tab2')">Sessions</button>
                 <button class="tablinks" onclick="openTab(event, 'Tab3')">Topic-Tags</button>
+                {% if sessions %}
+                    <button class="tablinks" onclick="openTab(event, 'Tab4')">Course Materials</button>
+                {% endif %}
             </div>
         </div>
         <form method="post" class="space-y-4" enctype="multipart/form-data">
@@ -81,39 +84,37 @@
         </div>
 
         <div id="Tab2" class="tabcontent">
+            <!-- Warning message -->
+            <div class="alert alert-warning" role="alert">
+                Note: You can't delete sessions that have materials.
+            </div>
             <!-- First column: Sessions -->
-                <div class="form-group" style="flex: 1;">
-                    <h3>Manage Sessions</h3>
-                    <ul id="sessions-container" class="sortable">
-                        {% for session in sessions %}
-                            <li class="session-item" data-id="{{ session.id }}">
-                                <input type="text" name="session_names" value="{{ session.name }}" class="form-control">
-                                <input type="hidden" name="session_ids" value="{{ session.id }}">
-                                <button type="button" class="delete-session" data-id="{{ session.id }}"
-                                    {% if session.materials.count > 0 %} disabled {% endif %}>
+            <div class="form-group" style="flex: 1;">
+                <h3>Manage Sessions</h3>
+                <div style="display: flex; flex-direction: column;">
+                <ul id="sessions-container" class="sortable" style="padding: 0; list-style-type: None;">
+                    {% for session in sessions %}
+                        <li class="session-item" data-id="{{ session.id }}">
+                            <input type="text" name="session_names" value="{{ session.name }}" class="form-control">
+                            <input type="hidden" name="session_ids" value="{{ session.id }}">
+                            {% if session.materials.count == 0 %}
+                                <button type="button" class="delete-session" data-id="{{ session.id }}">
                                     <i class="fas fa-times"></i>
                                 </button>
-                                {% if session.materials.count > 0 %}
-                                    <span class="text-danger">Cannot delete: Session has materials.</span>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <input type="hidden" name="delete_session_ids" id="delete-session-ids">
-                    <input type="hidden" name="session_order" id="session-order">
-
-                    <!-- Add New Sessions -->
-                    <div id="new-sessions-container"></div>
-                    <button type="button" id="add-new-session" class="btn btn-secondary">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <input type="hidden" name="delete_session_ids" id="delete-session-ids">
+                <input type="hidden" name="session_order" id="session-order">
                 </div>
-            {% if sessions %}
-                <a href="{% url 'course:course_content_edit' course.pk sessions.0.id %}" class="btn btn-primary">Edit Course Content</a>
-                <a href="{% url 'course:reorder_course_materials' course.pk sessions.0.id %}" class="btn btn-primary">Edit Course Order</a>
-            {% else %}
-                <span>No sessions available.</span>
-            {% endif %}
+
+                <!-- Add New Sessions -->
+                <div id="new-sessions-container"></div>
+                <button type="button" id="add-new-session" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
         </div>
 
         <div id="Tab3" class="tabcontent">
@@ -121,7 +122,12 @@
             <div class="form-group" style="flex: 1;">
                 <!-- Topic Dropdown -->
                 <div class="form-group">
-                    <h3>Topic</h3>
+                    <h3>
+                        Topic
+                        <a href="{% url 'course:topic_add' %}" class="ms-2 text-decoration-none">
+                            <i class="fas fa-plus-circle text-success" style="font-size: 0.8em;"></i>
+                        </a>
+                    </h3>
                     <select id="topic" name="topic" class="form-control">
                         <option value="">Select a Topic</option>
                         {% for topic in topics %}
@@ -132,7 +138,12 @@
 
                 <!-- Tags Checkboxes -->
                 <div class="form-group" id="tags-container">
-                    <h3>Tags</h3>
+                    <h3>
+                        Tags
+                        <a href="{% url 'course:tag_add' %}" class="ms-2 text-decoration-none">
+                            <i class="fas fa-plus-circle text-success" style="font-size: 0.8em;"></i>
+                        </a>
+                    </h3>
                     <div id="tags-list">
                         <!-- Tags will be populated here based on the selected topic -->
                     </div>
@@ -158,13 +169,18 @@
                     <p>No tags added yet.</p>
                     {% endif %}
                 </div>
-                <a href="{% url 'course:topic_list' %}" class="btn btn-primary">Topic List</a>
-                <a href="{% url 'course:tag_list' %}" class="btn btn-primary">Tag List</a>
+                <a href="{% url 'course:topic_tag_list' %}" class="btn btn-primary">Topic-Tag List</a>
             </div>
         </div>
-
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="{% url 'course:course_list' %}" class="btn btn-secondary">Return to Course List</a>
+        <div id="Tab4" class="tabcontent"></div>
+        <div style="display: flex; justify-content: flex-start; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="background-color: #389bb0; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 20px; margin-right: 10px;">
+                Save
+            </button>
+            <a href="{% url 'course:course_list' %}" style="background-color: gray; color: white; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-decoration: none;">
+                Return to Course List
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %}
@@ -191,20 +207,44 @@
             tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
 
-        // Show the current tab, and add an "active" class to the button that opened the tab
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+        // If Tab 4 is selected, redirect to the course_content_edit view
+        if (tabName === 'Tab4') {
+            // Replace `courseId` and `firstSessionId` with actual values
+            var courseId = {{ course.pk }}; // Use dynamic course ID
+            var firstSessionId = {{ first_session_id|default:"null" }}; // Use dynamic session ID
+            localStorage.setItem("activeTab", "Tab4"); // Save Tab4 as the active tab
+            window.location.href = `/course/${courseId}/content/edit/${firstSessionId}/`;
+        } else {
+            // Show the selected tab and add "active" class to the clicked button
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            // Save the selected tab in localStorage
+            localStorage.setItem("activeTab", tabName);
+        }
     }
 
     // Optionally, you can set the default tab to be opened
     document.addEventListener("DOMContentLoaded", function() {
-        document.querySelector(".tab button").click();  // Simulate a click on the first tab
+        let savedTab = localStorage.getItem("activeTab") || "Tab1"; // Default to Tab1
+        let defaultTabButton = document.querySelector(`.tablinks[onclick="openTab(event, '${savedTab}')"]`);
+
+        if (defaultTabButton) {
+            defaultTabButton.click();
+        }
     });
 
     document.addEventListener('DOMContentLoaded', function() {
         const tags = [
             {% for tag in tags %}
             { id: "{{ tag.id }}", name: "{{ tag.name }}", topicId: "{{ tag.topic.id }}" },
+            {% endfor %}
+        ];
+
+        // Define already-selected tags
+        const selectedTags = [
+            {% for tag in course.tags.all %}
+            "{{ tag.id }}",
             {% endfor %}
         ];
 
@@ -223,7 +263,7 @@
 
             if (selectedTopicId) {
                 // Filter tags by the selected topic
-                const filteredTags = tags.filter(tag => tag.topicId === selectedTopicId);
+                const filteredTags = tags.filter(tag => tag.topicId === selectedTopicId && !selectedTags.includes(tag.id));
 
                 // Initially display the first 5 tags
                 filteredTags.slice(0, visibleItems).forEach(tag => {
@@ -357,6 +397,10 @@
             `;
             $('#new-sessions-container').append(newSessionHtml);
         });
+
+        $('#new-sessions-container').on('click', '.delete-session', (function() {
+            $(this).closest('.session-item').remove();
+        }));
 
         // Event delegation for deleting sessions
         $('#sessions-container').on('click', '.delete-session', function() {

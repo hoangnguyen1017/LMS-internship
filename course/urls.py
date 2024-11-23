@@ -7,7 +7,9 @@ app_name = 'course'
 urlpatterns = [
     path('', views.course_list, name='course_list'),
     path('add/', views.course_add, name='course_add'),
-    path('edit/<int:pk>/', views.course_edit, name='course_edit'),
+    path('edit/<int:pk>/details/', views.course_edit_detail, name='course_edit_detail'),
+    path('edit/<int:pk>/sessions/', views.course_edit_session, name='course_edit_session'),
+    path('edit/<int:pk>/topic-tags/', views.course_edit_topic_tags, name='course_edit_topic_tags'),
     path('courses/delete/<int:pk>/', views.course_delete, name='course_delete'),
     path('enroll/<int:pk>/', views.course_enroll, name='course_enroll'),
     path('unenroll/<int:pk>/', views.course_unenroll, name='course_unenroll'),
@@ -29,13 +31,11 @@ urlpatterns = [
     # Certificate
     path('<int:pk>/generate-certificate/', views.generate_certificate_png, name='generate_certificate'),
     # Topic URLs
-    path('topics/', views.topic_list, name='topic_list'),
+    path('topics/', views.topic_tag_list, name='topic_tag_list'),
     path('topics/add/', views.topic_add, name='topic_add'),
     path('topics/edit/<int:pk>/', views.topic_edit, name='topic_edit'),
     path('topics/delete/<int:pk>/', views.topic_delete, name='topic_delete'),
 
-    # Tag URLs
-    path('tags/', views.tag_list, name='tag_list'),
     path('tags/add/', views.tag_add, name='tag_add'),
     path('tags/edit/<int:pk>/', views.tag_edit, name='tag_edit'),
     path('tags/delete/<int:pk>/', views.tag_delete, name='tag_delete'),

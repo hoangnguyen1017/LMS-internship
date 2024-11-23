@@ -1,4 +1,5 @@
-from django.urls import include, path
+from django.urls import include, path, path, re_path
+
 from . import views
 from .views_type import (
     AssessmentTypeListView,
@@ -27,7 +28,12 @@ urlpatterns = [
     path('assessmenttype/delete/<int:pk>/', AssessmentTypeDeleteView.as_view(), name='assessmenttype_delete'),
 
     path('take/<int:assessment_id>/', views.take_assessment, name='take_assessment'),
-    path('result/<int:assessment_id>/<int:attempt_id>/', views.assessment_result, name='assessment_result'),
+
+    path('result/<int:assessment_id>/<int:attempt_id>/<str:email>/', views.assessment_result, name='assessment_result'),
+    path('result/<int:assessment_id>/<int:attempt_id>/', views.assessment_result, name='assessment_result_no_email'),
+
+
+    
 ]
 
 

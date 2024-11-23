@@ -3,16 +3,17 @@
 {% block title %}{{ assessment.assessment_title }}{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/take_ass.css' %}">
+
 <div class="container mt-4">
     <div class="assessment-header text-center">
         <h1 class="display-4 mb-2">{{ assessment.assessment_title }}</h1>
         <p class="text-muted lead">{{ assessment.assessment_description }}</p>
     </div>
 
-    <form method="POST" class="assessment-form mt-5">
-        {% csrf_token %}
+    <form method="POST" action="{% url 'assessment:take_assessment' assessment.id %}" class="assessment-form mt-5">
 
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ request.GET.email }}">
         
         <!-- Countdown Timer -->
         <div class="alert alert-warning text-center fixed-timer shadow-sm" id="timer">

@@ -4,7 +4,7 @@
 {% block title %}Location{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="mt-4">
     <ul class="nav nav-tabs mt-3">
         <li class="nav-item">
             <a class="nav-link" href="{% url 'department:department_list' %}">Department List</a>
@@ -28,14 +28,14 @@
 
     <div class="mt-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="btn-group">
+            <div class="mt-3">
                 <a href="{% url 'department:location_create' %}" class="btn btn-primary" title="Add Location">
                     <i class="fas fa-plus"></i> Add
                 </a>
                 <button type="button" id="delete_button" class="btn btn-danger" title="Delete selected locations">
                     <i class="fas fa-trash-alt"></i> Delete
                 </button>
-                <a href="{% url 'department:location_list' %}" class="btn btn-info" title="Refresh Location List" id="refresh_button">
+                <a href="{% url 'department:location_list' %}" class="btn btn-warning" title="Refresh Location List" id="refresh_button">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </a>
             </div>
@@ -52,15 +52,10 @@
             {% csrf_token %}
             <!-- Thêm các nội dung khác nếu cần -->
         </form>
-    </div>
-    
-
-            <table class="table table-striped mt-3">
+            <table class="table table-striped mt-4">
                 <thead>
                     <tr>
-                        <th>
-                            <input type="checkbox" id="select_all">
-                        </th>
+                        <th><input type="checkbox" id="select_all" class="form-check-input"></th>
                         <th>#</th>
                         <th>Location Name</th>
                         <th>Address</th>
@@ -72,17 +67,15 @@
                         {% for location in page_obj.object_list %}
                         <tr>
                             <td>
-                                <input type="checkbox" name="selected_locations" value="{{ location.pk }}" class="location-checkbox">
+                                <input type="checkbox" name="selected_locations" value="{{ location.pk }}" class="form-check-input">
                             </td>
                             <td>{{ page_obj.number|add:'-1'|multiply:5|add:forloop.counter }}</td>
                             <td>{{ location.name }}</td>
                             <td>{{ location.address }}</td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="{% url 'department:location_update' location.pk %}" class="btn btn-warning btn-sm" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
+                                <a href="{% url 'department:location_update' location.pk %}" class="btn btn-outline-dark btn-sm" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}

@@ -1,23 +1,30 @@
 {% extends 'base.html' %}
-{% load static %} 
+{% load static %}
 {% block title %}Role List{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
+<div class="mt-4">
     <h2>Roles</h2>
 
+    <!-- Hiển thị thông báo nếu có -->
+    {% if messages %}
+        <div class="alert alert-success" role="alert">
+            {% for message in messages %}
+                {{ message }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <div class="mt-3">
-
-      <a href="{% url 'role:role_add' %}" class="btn btn-primary" title="Add New Role" data-toggle="tooltip">
-        <i class="fas fa-plus"></i> Add Role
-      </a>
-      <button class="btn btn-success" title="Import Roles from Excel" data-toggle="modal" data-target="#importModal" data-toggle="tooltip">
-        <i class="fas fa-file-import"></i> Import
-      </button>
-
-      <a href="{% url 'role:export_roles' %}" class="btn btn-secondary" title="Export Roles to Excel" data-toggle="tooltip">
-        <i class="fas fa-file-export"></i> Export
-      </a>
+        <a href="{% url 'role:role_add' %}" class="btn btn-primary" title="Add New Role" data-toggle="tooltip">
+            <i class="fas fa-plus"></i> Add Role
+        </a>
+        <button class="btn btn-success" title="Import Roles from Excel" data-bs-toggle="modal" data-bs-target="#importModal" data-toggle="tooltip">
+            <i class="fas fa-file-import"></i> Import
+        </button>
+        
+        <a href="{% url 'role:export_roles' %}" class="btn btn-secondary" title="Export Roles to Excel" data-toggle="tooltip">
+            <i class="fas fa-file-export"></i> Export
+        </a>
     </div>
 
     <table class="table table-striped">
@@ -25,6 +32,7 @@
             <tr>
                 <th>#</th>
                 <th>Role Name</th>
+                <th>Modules</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -34,49 +42,282 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ role.role_name }}</td>
                 <td>
-                    <a href="{% url 'role:role_edit' role.pk %}" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="{% url 'role:role_delete' role.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                    <div>
+                        <ul class="list-unstyled mb-0">
+                            {% for role_module in role.rolemodule_set.all|slice:":3" %}
+                                <li>{{ role_module.module.module_name }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% if role.rolemodule_set.all|length > 3 %}
+                        <ul class="list-unstyled d-none" id="modules-list-{{ forloop.counter }}">
+                            {% for role_module in role.rolemodule_set.all|slice:"3:" %}
+                                <li>{{ role_module.module.module_name }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button class="btn btn-link p-0" onclick="toggleModules({{ forloop.counter }})" id="modules-toggle-{{ forloop.counter }}">See more...</button>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <a href="{% url 'role:role_edit' role.pk %}" class="btn btn-outline-dark btn-sm">
+                        <i class="fas fa-edit"></i> <!-- Icon chỉnh sửa -->
+                    </a>
+                    <a href="{% url 'role:role_delete' role.pk %}" class="btn btn-outline-dark btn-sm">
+                        <i class="fas fa-trash-alt"></i> <!-- Icon xóa -->
+                    </a>
+                    
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    
 </div>
 
 <!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="importModalLabel">Import Roles from Excel</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <!-- Import Form -->
-        <form method="post" enctype="multipart/form-data" action="{% url 'role:import_roles' %}">
-        <div class="mb-4">
-          <span>
-            Please download and use the <a href="{% static 'excel/import_roles.xlsx' %}" target="_blank">Excel template</a>. The Excel file must contain exactly one sheet with the required columns.
-          </span>
-        </div>
-          {% csrf_token %}
-          {{ form.as_p }}
-          <div class="form-group">
-            <button type="submit" class="btn btn-primary">Upload</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width: 100vw;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Roles</h5>
+                <button type="button" class="btn-close" id="closeImportModal" data-bs-dismiss="modal" aria-label="Close"></button>                                    
+            </div>
+            <form id="importForm" method="POST" enctype="multipart/form-data" action="{% url 'role:import_roles' %}">
+                {% csrf_token %}
+                <div class="modal-body text-center">
+                    <h5>Choose a file (XLSX, CSV, JSON)</h5>
+                    <div id="drop_area" class="drag-area">
+                        <p>Drag and drop file here or click to browse</p>
+                        <small>Limit 200MB per file • <span id="fileName"></span></small>
+                        <input type="file" id="file" name="file" class="form-control" accept=".xlsx, .csv, .json" style="display: none;">
+                    </div>                                  
 
+                    <!-- Table to display file content -->
+                    <div id="filePreview" style="display:none;" class="file-preview mt-3">
+                        <h5>File Preview</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center me-auto">
+                                <div class="btn btn-success" style="margin-right: 1vh;">Search</div>
+                                <input type="text" id="searchInput" placeholder="Searching..." class="search-input">
+                            </div>
+                            
+                            <button type="submit" id="confirmImport" class="btn btn-primary" disabled>Confirm Import</button>
+                        </div>
+                    
+                        <div class="table-responsive" style="max-height: 65vh;">
+                            <table class="table" id="previewTable">
+                                <thead>
+                                    <tr id="previewHeader">
+                                        <!-- Add <th> tags here -->
+                                    </tr>
+                                </thead>
+                                <tbody id="previewBody">
+                                    <!-- Add data rows here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>                                                                             
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Initialize Bootstrap Tooltips -->
 <script>
-  $(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-  });
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // Xử lý sự kiện click cho nút import
+        $('.btn-success').on('click', function() {
+            $('#importModal').modal('show');
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.getElementById('drop_area');
+        const fileInput = document.getElementById('file');
+        const previewHeader = document.getElementById('previewHeader');
+        const previewBody = document.getElementById('previewBody');
+        const filePreview = document.getElementById('filePreview');
+        const confirmImportButton = document.getElementById('confirmImport');
+        const fileNameDisplay = document.getElementById('fileName');
+        const searchInput = document.getElementById('searchInput');
+        
+        // Khi nhấp vào vùng kéo và thả, mở hộp thoại tệp
+        dropArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+  
+        // Ngăn chặn hành vi mặc định khi kéo tệp
+        dropArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropArea.style.borderColor = 'green';
+        });
+  
+        // Đặt lại màu viền khi rời khỏi khu vực kéo
+        dropArea.addEventListener('dragleave', function() {
+            dropArea.style.borderColor = '#ccc';
+        });
+  
+        // Xử lý thả tệp
+        dropArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropArea.style.borderColor = '#ccc';
+            const files = e.dataTransfer.files;
+  
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileNameDisplay.textContent = files[0].name;
+                readFile(files[0]);
+            }
+        });
+  
+        // Khi người dùng chọn tệp qua input
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                fileNameDisplay.textContent = fileName;
+                readFile(fileInput.files[0]);
+            }
+        });
+  
+        // Hàm đọc tệp và hiển thị bản xem trước
+        function readFile(file) {
+            const reader = new FileReader();
+      
+            if (file.type === "application/json") {
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    displayPreview(content, file.type);
+                };
+                reader.readAsText(file);
+            } else if (file.type === "text/csv") {
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    displayPreview(content, file.type);
+                };
+                reader.readAsText(file);
+            } else if (file.type === "text/tab-separated-values" || file.name.endsWith(".tsv")) {
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    displayPreview(content, "text/tab-separated-values");
+                };
+                reader.readAsText(file);
+            } else if (file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || file.type === "application/vnd.ms-excel") {
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    displayExcelPreview(content);
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (file.type === "application/x-yaml" || file.type === "text/yaml" || file.name.endsWith(".yaml") || file.name.endsWith(".yml")) {
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    displayYAMLPreview(content);
+                };
+                reader.readAsText(file);
+            } else {
+                alert("Định dạng tệp không được hỗ trợ.");
+            }
+        }
+
+        // Cập nhật hàm displayPreview để xử lý JSON, CSV, và TSV
+        function displayPreview(content, fileType) {
+            const rows = [];
+            let headers = [];
+      
+            if (fileType === "application/json") {
+                const jsonData = JSON.parse(content);
+                headers = Object.keys(jsonData[0]);
+                jsonData.forEach(row => {
+                    const dataRow = headers.map(header => row[header]);
+                    rows.push(dataRow);
+                });
+            } else if (fileType === "text/csv" || fileType === "text/tab-separated-values") {
+                const lines = content.split('\n');
+                headers = lines[0].split(',');
+                lines.slice(1).forEach(line => {
+                    if (line) {
+                        const dataRow = line.split(',');
+                        rows.push(dataRow);
+                    }
+                });
+            }
+      
+            // Hiển thị tiêu đề và dữ liệu trong bảng
+            previewHeader.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+            previewBody.innerHTML = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+            filePreview.style.display = 'block';
+            confirmImportButton.disabled = false; // Kích hoạt nút xác nhận nhập
+        }
+
+        // Hàm hiển thị xem trước tệp Excel
+        function displayExcelPreview(data) {
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetNames = workbook.SheetNames;
+            const rows = [];
+            let headers = [];
+
+            sheetNames.forEach(sheet => {
+                const worksheet = workbook.Sheets[sheet];
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                headers = json[0];
+                json.slice(1).forEach(row => {
+                    rows.push(row);
+                });
+            });
+      
+            previewHeader.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+            previewBody.innerHTML = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+            filePreview.style.display = 'block';
+            confirmImportButton.disabled = false; // Kích hoạt nút xác nhận nhập
+        }
+
+        function displayYAMLPreview(content) {
+            try {
+                const yamlData = jsyaml.load(content); // Sử dụng thư viện js-yaml
+                const headers = Object.keys(yamlData[0]); // Giả định YAML là một danh sách các đối tượng
+                const rows = yamlData.map(row => headers.map(header => row[header]));
+        
+                // Hiển thị tiêu đề và dữ liệu trong bảng
+                previewHeader.innerHTML = headers.map(header => `<th>${header}</th>`).join('');
+                previewBody.innerHTML = rows.map(row => `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`).join('');
+                filePreview.style.display = 'block';
+                confirmImportButton.disabled = false; // Kích hoạt nút xác nhận nhập
+            } catch (e) {
+                alert("Không thể phân tích tệp YAML. Vui lòng kiểm tra định dạng.");
+            }
+        }
+        
+
+    });
+    function togglePermissions(roleIndex) {
+        const list = document.getElementById(`permissions-list-${roleIndex}`);
+        const toggleButton = document.getElementById(`permissions-toggle-${roleIndex}`);
+        
+        if (list.classList.contains('d-none')) {
+            list.classList.remove('d-none');
+            toggleButton.textContent = "See less";
+        } else {
+            list.classList.add('d-none');
+            toggleButton.textContent = "See more...";
+        }
+    }
+    
+    function toggleModules(roleIndex) {
+        const list = document.getElementById(`modules-list-${roleIndex}`);
+        const toggleButton = document.getElementById(`modules-toggle-${roleIndex}`);
+        
+        if (list.classList.contains('d-none')) {
+            list.classList.remove('d-none');
+            toggleButton.textContent = "See less";
+        } else {
+            list.classList.add('d-none');
+            toggleButton.textContent = "See more...";
+        }
+    }
 </script>
 {% endblock %}

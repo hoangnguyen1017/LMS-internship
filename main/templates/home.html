@@ -3,38 +3,34 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    
-    <h1 class="mb-4 text-center">Learning Management System </h1>
+    <h1 class="text-center mb-5 display-5 fw-bold text-primary">Learning Management System</h1>
+
     {% for group in module_groups %}
     <div class="mb-5">
-        <h2 class="text-primary mb-3">{{ group.name }}</h2>  
+        <h2 class="text-primary fw-semibold mb-4">{{ group.name }}</h2>  
 
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             {% for module in modules %}
                 {% if module.module_group == group %}
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <!-- Bọc toàn bộ nội dung card trong thẻ a -->
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
                         <a href="{% if user.is_authenticated %}{% url module.module_url %}{% else %}{% url 'main:login' %}{% endif %}" class="text-decoration-none text-dark">
-                            <div class="card-body text-center d-flex flex-column justify-content-center" style="height: 180px; width: 100%; overflow: hidden;">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                                
                                 <!-- Module Icon -->
                                 <div class="icon mb-3">
-                                    <i class="{{ module.icon }} fa-3x" style="color: #2196F3;"></i>
+                                    <i class="{{ module.icon }} fa-3x text-primary"></i>
                                 </div>
-
+                                
                                 <!-- Module Name -->
-                                <h5 class="card-title" style="font-size: 1.5rem;">{{ module.module_name }}</h5>
+                                <h5 class="card-title mb-2 fs-4">{{ module.module_name }}</h5>
                                 
-                                <!-- Thông điệp cho người dùng chưa đăng nhập -->
-                                <div class="card-footer text-center">
-                                    {% if user.is_authenticated %}
-                                        <span class="text-muted">Welcome, {{ user.username }}!</span>
-                                    {% else %}
-                                        <span class="text-muted">Please <a href="{% url 'main:login' %}">log in</a></span>
-                                    {% endif %}
-                                </div>
-                                
+                                <!-- Message for users who are not logged in -->
+                                {% if not user.is_authenticated %}
+                                <p class="text-muted small mt-3">
+                                    Please <a href="{% url 'main:login' %}" class="text-primary">log in</a> to access
+                                </p>
+                                {% endif %}
                             </div>
                         </a>
                     </div>
@@ -44,18 +40,5 @@
         </div>
     </div>
     {% endfor %}
-</div>
-{% endblock %}
 
-{% block extra_css %}
-<style>
-    .card {
-        transition: transform 0.2s, box-shadow 0.2s; /* Thay đổi thời gian cho các hiệu ứng */
-    }
-
-    .card:hover {
-        transform: scale(1.03); /* Phóng to thẻ một chút */
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Thêm bóng đổ khi hover */
-    }
-</style>
 {% endblock %}

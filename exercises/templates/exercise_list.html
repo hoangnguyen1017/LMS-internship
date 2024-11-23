@@ -7,9 +7,7 @@
 </a>
 <ul>
     {% for exercise in exercises %}
-        <li>
-            <a href="{% url 'exercises:exercise_detail' exercise.id 0 %}">{{ exercise.title }}</a>
-        </li>
+        <li><a href="{% url 'exercises:exercise_detail' exercise.id %}">{{ exercise.title }}</a></li>
     {% endfor %}
 </ul>
 {% endblock %}

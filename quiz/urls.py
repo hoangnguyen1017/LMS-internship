@@ -20,11 +20,6 @@ urlpatterns = [
     path('answer_option/edit/<int:pk>/', views.answer_option_edit, name='answer_option_edit'),
     path('answer_option/delete/<int:pk>/', views.answer_option_delete, name='answer_option_delete'),
     path('<int:quiz_id>/take/', views.take_quiz, name='take_quiz'),
-    path('<int:quiz_id>/send_invite/', views.send_quiz_invite, name='send_invite'),
-    path('<int:quiz_id>/copy_public_link/', views.copy_public_invite_link, name='copy_public_link'),
-    path('<int:quiz_id>/take_public/', views.take_quiz_public, name='take_quiz_public'), # Đường dẫn cho public
-
-
     path('<int:quiz_id>/result/<int:attempt_id>/', views.quiz_result, name='quiz_result'),
     path('<int:quiz_id>/import/', views.import_questions, name='import_questions'),
 

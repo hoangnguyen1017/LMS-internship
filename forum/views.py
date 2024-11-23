@@ -6,6 +6,9 @@ from course.models import Course
 from django.core.paginator import Paginator
 from module_group.models import ModuleGroup, Module
 from user.models import User
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 
 def question_list(request):
@@ -92,30 +95,37 @@ def question_detail(request, pk):
 
 @login_required
 def create_question(request):
+    courses = Course.objects.all()  # Fetch all courses
     if request.method == 'POST':
         form = ForumQuestionForm(request.POST, request.FILES)
         if form.is_valid():
             question = form.save(commit=False)
-            question.user = request.user
+            question.user = request.user  # Set the user field
             question.save()
             return redirect('forum:question_list')
     else:
         form = ForumQuestionForm()
-    return render(request, 'forum_create_question.html', {'form': form})
+    return render(request, 'forum_create_question.html', {'form': form, 'courses': courses})
 
 @login_required
 def edit_question(request, pk):
     question = get_object_or_404(ForumQuestion, pk=pk)
+    courses = Course.objects.all()  # Fetch all courses
     if request.method == 'POST':
         form = ForumQuestionForm(request.POST, request.FILES, instance=question)
         if form.is_valid():
             if 'image-clear' in request.POST:
                 question.image.delete()
-            form.save()
+            question = form.save(commit=False)
+            width = form.cleaned_data.get('width')
+            height = form.cleaned_data.get('height')
+            if width and height and question.image:
+                question.image = resize_image(question.image, width, height)
+            question.save()
             return redirect('forum:question_detail', pk=pk)
     else:
         form = ForumQuestionForm(instance=question)
-    return render(request, 'forum_edit_question.html', {'form': form})
+    return render(request, 'forum_edit_question.html', {'form': form, 'courses': courses})
 
 @login_required
 def delete_question(request, pk):
@@ -228,8 +238,6 @@ def dislike_reply(request, pk):
         reply.dislikes.remove(request.user)
     else:
         reply.dislikes.add(request.user)
-        reply.likes.remove(request.user)
-    return redirect('forum:question_detail', pk=reply.comment.question.pk if reply.comment else reply.parent_reply.comment.question.pk)
 
 @login_required
 def report_content(request, report_type, report_id):
@@ -267,3 +275,11 @@ def get_reported_content(report_type, report_id):
     elif report_type == 'reply':
         return get_object_or_404(Reply, pk=report_id)
     return None
+
+def resize_image(image, width, height):
+    img = Image.open(image)
+    img = img.resize((width, height), Image.ANTIALIAS)
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    return ContentFile(buffer.getvalue())
+

@@ -1,18 +1,69 @@
 {% extends 'base.html' %}
-{% load role_form_filters %}
-{% block title %}{{ form.instance.pk|yesno:"Edit Role,Add New Role" }}{% endblock %}
+
+{% block title %}{{ form.instance.pk|yesno:"Edit Role, Add New Role" }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ form.instance.pk|yesno:"Edit Role,Add New Role" }}</h2>
+<div class="mt-4">
+    <h2>{{ form.instance.pk|yesno:"Edit Role, Add New Role" }}</h2>
     <form method="post">
         {% csrf_token %}
+        
+        <!-- Trường nhập tên Role -->
         <div class="form-group">
             {{ form.role_name.label_tag }}
-            {{ form.role_name|add_class:"form-control" }}
+            {{ form.role_name }}
         </div>
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a href="{% url 'role:role_list' %}" class="btn btn-secondary">Back to Role List</a>
+
+
+        <div class="row mb-5">
+            <div class="col-md-5">
+                <h5>Available Modules</h5>
+                <input type="text" id="searchAvailableModules" class="form-control mb-2" placeholder="Search Modules..." oninput="filterOptions('searchAvailableModules', 'availableModules')">
+                <select id="availableModules" class="form-select" size="10" multiple>
+                    {% for module in all_modules %}
+                        {% if module.id not in selected_modules %}
+                            <option value="{{ module.id }}">{{ module.module_name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+                <button type="button" class="btn btn-outline-primary mb-2" onclick="moveSelected('availableModules', 'selectedModules')">Add ></button>
+                <button type="button" class="btn btn-outline-danger" onclick="moveSelected('selectedModules', 'availableModules')">< Remove</button>
+            </div>
+        
+            <div class="col-md-5">
+                <h5>Selected Modules</h5>
+                <input type="text" id="searchSelectedModules" class="form-control mb-2" placeholder="Search Selected Modules..." oninput="filterOptions('searchSelectedModules', 'selectedModules')">
+                <select name="modules" id="selectedModules" class="form-select" size="10" multiple>
+                    {% for module in all_modules %}
+                        {% if module.id in selected_modules %}
+                            <option value="{{ module.id }}" selected>{{ module.module_name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+
+        <!-- Nút lưu và trở về danh sách role -->
+        <button type="submit" class="btn btn-primary mt-3">Save</button>
+        <a href="{% url 'role:role_list' %}" class="btn btn-secondary mt-3">Back to Role List</a>
     </form>
 </div>
+
+<!-- JavaScript để di chuyển các mục giữa hai danh sách -->
+<script>
+function moveSelected(sourceId, targetId) {
+    var source = document.getElementById(sourceId);
+    var target = document.getElementById(targetId);
+    var selectedOptions = Array.from(source.selectedOptions);
+
+    selectedOptions.forEach(function(option) {
+        target.appendChild(option);
+    });
+}
+</script>
+
 {% endblock %}

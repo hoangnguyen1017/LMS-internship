@@ -12,18 +12,22 @@
         <div class="col-md-6 mb-4">
             <div class="card shadow-lg h-100">
                 <div class="row">
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <div class="card-body">
-                            <h5 class="card-title text-primary"><a href="{% url 'learning_path:step_list' item.learning_path.id %}">{{ forloop.counter }}. {{ item.learning_path.title }}</a></h5>
+                            <h5 class="card-title text-primary">
+                                <a href="{% url 'learning_path:step_list' item.learning_path.id %}" class="text-decoration-none">
+                                    {{ forloop.counter }}. {{ item.learning_path.title }}
+                                </a>
+                            </h5>
                             <p class="card-text text-muted">{{ item.learning_path.description|truncatewords:20 }}</p>
                         </div>
                     </div>
-                    <div class="col-md-4" style="margin-top: 5px;">
+                    <div class="col-md-6" style="margin-top: 5px;">
                         <!-- Action Buttons -->
                         <div class="btn-group gap-2">
                             <!-- Enroll Button -->
                             <a href="{% url 'learning_path:learning_path_enroll' item.learning_path.id %}" class="btn btn-outline-success">
-                                <i class="fas fa-user-plus"></i> Enroll ({{item.enrolled_count}})
+                                <i class="fas fa-user-plus"></i> Enroll ({{ item.enrolled_count }})
                             </a>
 
                             <!-- Recommend Button -->
@@ -36,29 +40,29 @@
                 <div class="card-footer bg-white">
                     <div class="row">
                         <div class="col-md-4">
-                            <a class="btn-outline-dark" href="{% url 'learning_path:learning_path_edit' item.learning_path.id %}">
+                            <a class="btn btn-outline-dark text-decoration-none" href="{% url 'learning_path:learning_path_edit' item.learning_path.id %}">
                                 <i class="fas fa-user"></i> {{ item.learning_path.creator.username }}
                             </a>
                         </div>
                         <div class="col-md-8 d-flex justify-content-end gap-2">
                             <!-- View Steps Button -->
-                            <a href="{% url 'learning_path:step_list' item.learning_path.id %}" class="btn btn-outline-dark">
-                                <i class="fas fa-list-ul"></i> Details
+                            <a title="Details" href="{% url 'learning_path:step_list' item.learning_path.id %}" class="btn btn-outline-dark text-decoration-none">
+                                <i class="fas fa-list-ul"></i> 
                             </a>
                             <!-- Duplicate Button -->
-                            <a href="{% url 'learning_path:learning_path_duplicate' item.learning_path.id %}" class="btn btn-outline-dark">
-                                <i class="fas fa-copy"></i> Duplicate
+                            <a title="Duplicate" href="{% url 'learning_path:learning_path_duplicate' item.learning_path.id %}" class="btn btn-outline-dark text-decoration-none">
+                                <i class="fas fa-copy"></i> 
                             </a>
                             <!-- Edit Button -->
-                            <a href="{% url 'learning_path:learning_path_edit' item.learning_path.id %}" class="btn btn-outline-dark">
-                                <i class="fas fa-edit"></i> Edit
+                            <a title="Edit" href="{% url 'learning_path:learning_path_edit' item.learning_path.id %}" class="btn btn-outline-dark text-decoration-none">
+                                <i class="fas fa-edit"></i> 
                             </a>
                             
                             <!-- Delete Button in Form -->
                             <form action="{% url 'learning_path:learning_path_delete' item.learning_path.id %}" method="post" class="mb-0">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-warning">
-                                    <i class="fas fa-trash-alt"></i> Delete
+                                <button type="submit" class="btn btn-outline-warning" title="Delete">
+                                    <i class="fas fa-trash-alt"></i> 
                                 </button>
                             </form>
                         </div>

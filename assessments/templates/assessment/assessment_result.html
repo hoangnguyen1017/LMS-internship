@@ -5,10 +5,12 @@
 {% block content %}
 <div class="container">
     <h2 class="text-center mb-4">Assessment Results for {{ assessment.title }}</h2>
+    
     <!-- Back to List Button -->
     <div class="text-end mb-3">
         <a href="{% url 'assessment:assessment_list' %}" class="btn btn-secondary">Back to List</a>
     </div>
+    
     <div class="card mb-4">
         <div class="card-header">
             <h3 class="mb-0">Quiz Answers</h3>
@@ -29,25 +31,25 @@
                             <ul class="list-group">
                                 {% for option in answer.question.answer_options.all %}
                                     <li class="list-group-item 
-                                        {% if option == answer.selected_option %}
+                                        {% if option in answer.selected_options.all %}
                                             {% if option.is_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}
                                         {% endif %}
                                     ">
                                         - {{ option.option_text }} 
-                                        {% if option == answer.selected_option %}
+                                        {% if option in answer.selected_options.all %}
                                             {% if option.is_correct %}
-                                                <span class="badge badge-success">Your Answer: Correct</span>
+                                                <span class="badge bg-success">Your Answer: Correct</span>
                                             {% else %}
-                                                <span class="badge badge-danger">Your Answer: Incorrect</span>
+                                                <span class="badge bg-danger">Your Answer: Incorrect</span>
                                             {% endif %}
                                         {% elif option.is_correct %}
-                                            <span class="badge badge-success">Correct</span>
+                                            <span class="badge bg-success">Correct</span>
                                         {% endif %}
                                     </li>
                                 {% endfor %}
                             </ul>
-                            {% if not answer.selected_option and answer.question.question_type == 'MCQ' %}
-                            <strong>Text Response:</strong> {{ answer.text_response|default:"No text response." }}
+                            {% if not answer.selected_options.exists and answer.question.question_type == 'MCQ' %}
+                                <strong>Text Response:</strong> {{ answer.text_response|default:"No text response." }}
                             {% endif %}
                         </li>
                     {% empty %}
@@ -81,6 +83,4 @@
         <h4 class="alert-heading">Total Assessment Score: {{ score_ass }}</h4>
     </div>
 </div>
-
-
 {% endblock %}

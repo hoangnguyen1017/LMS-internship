@@ -223,7 +223,7 @@
 
 <div class="container mt-4 ">
     <h1 class="mb-4">Quiz</h1>
-    
+
     <div class="text-center mb-4">
         <div class="d-inline">
             <a href="{% url 'quiz:excel_to_json_view' %}" class="btn btn-blue-green mr-2">
@@ -331,9 +331,10 @@
                             {% endif %}
                         
                             <div class="copy-preview-duplicate" style="display: inline-block; margin-left: 10px;">
-                                <button class="btn btn-outline-primary btn-sm">Copy public invite link</button>
+                                <a href="#" onclick="copyInviteLink(event, '{{ quiz.invite_link }}')" title="Copy invite link">
+                                    <i class="small-text"></i> Copy invite link
+                                </a>
                             </div>
-                            
                         </div>
                         
                     </div>
@@ -380,9 +381,6 @@
     </div>
 </div>
 
-<script id="quiz-data">
-    const quizId = {{ quiz.id }}; // Gán quizId tại đây
-</script>
 
 <script>
     function searchQuizzes() {
@@ -420,14 +418,11 @@
     });
     
     // Hàm copy link
-    copyLinkButton.addEventListener('click', () => {
-        fetch(`/quiz/${quizId}/copy_public_link/`)
-        .then(response => response.json())
-        .then(data => {
-            navigator.clipboard.writeText(data.link);
-            alert("Link copied to clipboard!");
-    });
-    });
+    function copyInviteLink(event, link) {
+        event.preventDefault();
+        navigator.clipboard.writeText(link);
+        // Có thể thêm thông báo copy thành công ở đây
+    }
     
 </script>
 

@@ -33,6 +33,16 @@ class UserForm(forms.ModelForm):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'role', 'password1', 'password2', 'profile_picture_url', 'bio', 'interests', 'learning_style', 'preferred_language', 'training_programs', 'student','student_code']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Kiểm tra nếu là superuser, bỏ yêu cầu các trường 'first_name', 'last_name', 'email', 'role'
+        if self.instance and self.instance.is_superuser:
+            self.fields['first_name'].required = False
+            self.fields['last_name'].required = False
+            self.fields['email'].required = False
+            self.fields['role'].required = False
+
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
@@ -43,7 +53,6 @@ class UserForm(forms.ModelForm):
         cleaned_data = super().clean()
         password1 = cleaned_data.get("password1")
         password2 = cleaned_data.get("password2")
-
         if not self.instance.pk and (not password1 or not password2):
             raise forms.ValidationError("Password is required when creating a new user.")
 
@@ -54,9 +63,10 @@ class UserForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data.get('first_name', user.first_name)
+        user.last_name = self.cleaned_data.get('last_name', user.last_name)
+        user.email = self.cleaned_data.get('email', user.email)
+        
         if self.cleaned_data.get('password1'):
             user.set_password(self.cleaned_data['password1'])
         elif self.instance.pk:
@@ -66,8 +76,11 @@ class UserForm(forms.ModelForm):
         if commit:
             user.save()
             profile, created = Profile.objects.get_or_create(user=user)
-            profile.role = self.cleaned_data['role']
-            profile.profile_picture_url = self.cleaned_data.get('profile_picture_url')
+            
+            # Truyền trực tiếp đối tượng Role, không phải ID
+            profile.role = self.cleaned_data.get('role', profile.role)
+            
+            profile.profile_picture_url = self.cleaned_data.get('profile_picture_url', profile.profile_picture_url)
             profile.bio = self.cleaned_data.get('bio', '')
             profile.interests = self.cleaned_data.get('interests', '')
             profile.learning_style = self.cleaned_data.get('learning_style', '')
@@ -76,7 +89,6 @@ class UserForm(forms.ModelForm):
             profile.save()
 
         return user
-
 
 class UserEditForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True)

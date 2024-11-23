@@ -4,7 +4,7 @@ from course.models import Course
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from quiz.models import StudentQuizAttempt
-from certificate.models import Certificate
+from certification.models import Certification
 
 class ProgressNotification(models.Model):    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -23,7 +23,7 @@ def create_progress_notification(sender, instance, created, **kwargs):
             course=instance.quiz.course, 
             notification_message=message
         )
-@receiver(post_save, sender=Certificate)
+@receiver(post_save, sender=Certification)
 def create_progress_notification_certificate(sender, instance, created, **kwargs):
     if created:
         message = f"Congratulations, Certificate is Ready!"

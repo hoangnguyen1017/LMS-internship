@@ -1,6 +1,6 @@
 #from django.test import TestCase
 
-from user.models import Role
+from role.models import Role
 
 try:
     # Retrieve the Role instance where role_name is 'Instructor'

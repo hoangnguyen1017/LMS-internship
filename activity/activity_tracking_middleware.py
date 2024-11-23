@@ -1,17 +1,7 @@
-#add this into Middleware in settings.py (Ex:MIDDLEWARE = [
-#    'django.middleware.security.SecurityMiddleware',
-#    'django.contrib.sessions.middleware.SessionMiddleware',
-#    'django.middleware.common.CommonMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
-#   'django.contrib.auth.middleware.AuthenticationMiddleware',
-#    'django.contrib.messages.middleware.MessageMiddleware',
-#    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#    'activity.activity_tracking_middleware.ActivityTrackingMiddleware',        add like this 
-#])
-
 from django.utils import timezone
 from django.urls import resolve
 from .models import UserActivityLog
+from course.models import Course  # Import Course model
 
 class ActivityTrackingMiddleware:
     def __init__(self, get_response):
@@ -21,24 +11,40 @@ class ActivityTrackingMiddleware:
         # Process the request
         response = self.get_response(request)
 
-        # Log activity if the user is authenticated
-        if request.user.is_authenticated:
+        # Log activity if the user is authenticated and the request is GET
+        if request.user.is_authenticated and request.method == 'GET':
             current_url = resolve(request.path_info).url_name
-            
-            # Check if the user has already accessed the activity page
-            if current_url == 'activity_view':  # Replace with the actual URL name for activity view
-                if not request.session.get('activity_page_accessed', False):
-                    # Log the activity
-                    UserActivityLog.objects.create(
-                        user=request.user,
-                        activity_type='page_visit',
-                        activity_details=f"Accessed {current_url}",
-                        activity_timestamp=timezone.now()
-                    )
-                    # Set the flag in the session to True
-                    request.session['activity_page_accessed'] = True
+            resolved_url = resolve(request.path_info)
+
+            # Kiểm tra nếu người dùng đang truy cập vào trang chi tiết khóa học
+            if current_url == 'course_enroll':
+                # Lấy ID khóa học từ kwargs (từ URL)
+                course_id = resolved_url.kwargs.get('pk')
+
+                if course_id:
+                    try:
+                        # Lấy thông tin khóa học từ database
+                        course = Course.objects.get(pk=course_id)
+                        activity_details = f"Accessed course enroll: {course.course_name} (ID: {course.pk})"
+                    except Course.DoesNotExist:
+                        activity_details = "Accessed course page (course not found)"
+                else:
+                    activity_details = "Accessed course page with no valid course ID"
+
+                # Ghi log hoạt động
+                UserActivityLog.objects.create(
+                    user=request.user,
+                    activity_type='page_visit',
+                    activity_details=activity_details,
+                    activity_timestamp=timezone.now()
+                )
             else:
-                # Reset the flag if they navigate away from the activity page
-                request.session['activity_page_accessed'] = False
+                # Ghi log cho các trang khác
+                UserActivityLog.objects.create(
+                    user=request.user,
+                    activity_type='page_visit',
+                    activity_details=f"Accessed {current_url}",
+                    activity_timestamp=timezone.now()
+                )
 
         return response

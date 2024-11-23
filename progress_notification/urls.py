@@ -11,7 +11,7 @@ urlpatterns = [
     path('import/', views.import_progress_notification, name='import_progress_notification'),
     path('export/', views.export_progress_notification, name='export_progress_notification'),
     path('notification/count/', views.unread_notification_count, name='unread_notification_count'),
-    path('notifications/', views.notification_list, name='notification_list'),
+    path('notifications/', views.notification_list, name='notification_list'), 
 
 
 ]

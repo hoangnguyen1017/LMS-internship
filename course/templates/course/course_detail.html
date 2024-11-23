@@ -5,41 +5,19 @@
 {% block title %}{{ course.course_name }}{% endblock %}
 
 {% block content %}
-<head>
-    <link rel="stylesheet" type="text/css" href="{% static 'course/course.css' %}">
-</head>
+<link rel="stylesheet" type="text/css" href="{% static 'course/course.css' %}">
 <body id="course-detail">
-<div class="background-wrapper" style="background-image: url('{% if course.image %}{{ course.image.url }}{% else %}{% static 'course/images/background_detail.png' %}{% endif %}');">
+<!-- <div class="background-wrapper" style="background-image: url('{% if course.image %}{{ course.image.url }}{% else %}{% static 'course/images/blue(8).png' %}{% endif %}');"> -->
     {% if user_type == 'instructor' or user.is_superuser %}
     <div class="container mt-0">
-        <a href="{% url 'course:course_list' %}" class="btn btn-secondary" style="margin-top: -60px; font-size: 18px; background-color: #d3d3d3; color: #333;">
-            &larr; Back to Course List
+        <a href="{% url 'course:course_list' %}" style="margin-top: -60px; font-size: 18px; color: #0087f3;">
+            <i class="fas fa-arrow-left" style="font-size: 20px; color: #0087f3;"></i> <!-- Arrow icon -->
         </a>
     </div>
     {% endif %}
     <div class="container mt-4">
         <div class="course-title-container">
             <h1 class="text-3xl font-bold main-color-text uppercase-title">{{ course.course_name }}</h1>
-        </div>
-
-        <div class="content-access-section">
-            {% if is_enrolled and sessions %}
-                <a href="{% url 'course:course_content' course.pk sessions.0.id %}" class="btn btn-success mb-1" style="background-color: #389bb0; border-color: #ace2e1; font-size: 23px;">Go to Content</a>
-                {% if user_type == 'instructor' or user.is_superuser %}
-                    <a href="{% url 'course:course_unenroll' course.pk %}" class="btn btn-success mb-1" style="background-color: #FF0000; color: white;">Unenroll</a>
-                {% endif %}
-            {% elif is_enrolled %}
-                <p> No sessions </p>
-            {% else %}
-                <div class="d-inline-flex align-items-center">
-                    <a href="{% url 'course:course_enroll' course.pk %}" class="btn btn-success mb-1" style="background-color: #389bb0; border-color: #ace2e1; font-size: 23px;">Enroll</a>
-                    <p class="course-info-text mb-0 ml-2" style="font-size: 18px;">Please review the prerequisite course before enrolling</p>
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="users_enrolled_container mt-2 mb-3">
-            <span class="users_enrolled">{{users_enrolled_count}} already enrolled</span>
         </div>
 
         <div class="container text-center"> <!--khung hình chữ nhật-->
@@ -66,14 +44,29 @@
                     <p class="course-info-text">Most learners appreciated this course</p>
                 </div>
                 <div class="col">
-                    <p class="session-count">
-                        <strong>{{ session_count }} Sessions</strong>
-                        <i class="fas fa-book"></i>
-                    </p>
+                    {% if is_enrolled and sessions %}
+                        <p class="session-count uppercase-title">
+                            <a href="{% url 'course:course_content' course.pk sessions.0.id %}" class="session-link">
+                                <span>{{ session_count }} Sessions</span>
+                                <i class="fas fa-book" style="color: black;"></i>
+                            </a>
+                        </p>
+                        <p class="course-info-text">Let's explore the course!</p>
+                    {% else %}
+                        <p class="session-count uppercase-title">
+                            <span>{{ session_count }} Sessions</span>
+                            <i class="fas fa-book" style="color: black;"></i>
+                        </p>
+                        {% if not is_enrolled %}
+                            <p class="course-info-text">Please review the prerequisite course before enrolling</p>
+                        {% else %}
+                            <p class="course-info-text">No sessions available</p>
+                        {% endif %}
+                    {% endif %}
                 </div>
 
                 <div class="col">
-                    <h4 class="course-info-title uppercase-title" style="color: black;">Relevant</h4>
+                    <h4 class="course-info-title uppercase-title" style="color: #2b59c3 bold">Relevant</h4>
                     <div style="display: flex; align-items: center;"> <!-- Added flex container -->
                         <i class="fas fa-tag" style="margin-right: 5px;"></i> <!-- Added margin for spacing -->
                         <ul class="tag-list" style="margin: 0; padding: 0;"> <!-- Reset margin and padding -->
@@ -87,29 +80,18 @@
                 </div>
 
                 <div class="col">
-                    {% if user_type == 'instructor' or user.is_superuser %}
-                        <!-- If the user is the course instructor -->
-                        <a href="{% url 'course:users_enrolled' course.pk %}" class="user-enroll-link uppercase-title">Users Enrolled</a>
-                        <p class="course-info-text">See details of the users enrolled</p>
-                        <form id="publishForm" method="post" action="{% url 'course:toggle_publish' course.pk %}" class="d-inline-block mb-1">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning">
-                                {% if course.published %}
-                                    Unpublish
-                                {% else %}
-                                    Publish
-                                {% endif %}
-                            </button>
-                        </form>
-                    {% elif user_type == 'student' %}
-                        <!-- For all authenticated users except the course instructor -->
-                        {% if is_enrolled %}
-                            <a href="{% url 'course:course_unenroll' course.pk %}" class="user-enroll-link uppercase-title" style="color: red;">Unenroll</a>
-                            <p class="course-info-text">When you un-enroll, this course will no longer appear</p>
+                    {%if can_enroll%}
+                        {% if is_enrolled and sessions %}
+                            <a href="{% url 'course:course_unenroll' course.pk %}" class="unenroll-link" style="font-size: 30px;" >Unenroll</a>
+                        {% elif is_enrolled %}
+                            <p>No sessions</p>
+                        {% else %}
+                            <div class="d-inline-flex align-items-center">
+                                <a href="{% url 'course:course_enroll' course.pk %}" class="enroll-link" style="font-size: 30px; color: #2b59c3;" title="Please review the prerequisite course!">Enroll</a>
+                            </div>
                         {% endif %}
-                    {% else %}
-                        <!-- If the user is not authenticated -->
-                        <p class="course-info-text">Please log in to enroll.</p>
+                    {% else%}
+                        <p style="color: red; font-size: 18px;">You are not eligible to enroll in this course</p>
                     {% endif %}
                 </div>
             </div>
@@ -154,7 +136,7 @@
                     </tr>
                     <tr>
                         <th>Instructor</th>
-                        <td class="text-left">{{ course.instructor.get_full_name }} ({{ course.instructor.username }})</td>
+                        <td class="text-left">{{ course.instructor.get_full_name }} {{ course.instructor.username }}</td>
                     </tr>
                     <tr>
                         <th>Average Rating</th>
@@ -231,10 +213,10 @@
                                 {% endif %}
                             {% endfor %}
                         {% else %}
-                            <div class="carousel-item active">
+                            <div class="carousel-item-active">
                                 <div class="row">
                                     <div class="col-12">
-                                        <p>No feedback has been provided for this course yet.</p>
+                                        <p style="margin-left: 30px;">No feedback has been provided for this course yet.</p>
                                     </div>
                                 </div>
                             </div>
@@ -249,11 +231,11 @@
                         <span class="sr-only">Next</span>
                     </a>
                 </div>
-            <a href="{% url 'feedback:course_all_feedback' course.pk %}" class="text-primary">
+            <a href="{% url 'feedback:course_all_feedback' course.pk %}" class="text-primary" style='margin-left: 30px;'>
                 See All Feedback
             </a>
             <p style="display: inline; margin: 0 5px;"> or </p>
-            <a href="{% url 'feedback:give_course_feedback' course.pk %}" class="text-primary">
+            <a href="{% url 'feedback:give_course_feedback' course.pk %}" class="text-primary" style='margin-left: 3px;'>
                 Give A Feedback
             </a>
         </div>
@@ -262,18 +244,18 @@
             {% if user_type == 'instructor' or user.is_superuser %}
                 <div class="content-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
                     {% if user_progress %}
-                        <table class="table" style="width: 100%; table-layout: fixed;">
+                        <table class="table" style="width: 100%; table-layout: fixed;border-collapse: collapse; border: 1px solid #ccc;">
                             <thead>
                                 <tr>
-                                    <th class="table-header username-column" style="color: #389bb0; width: 30%; text-align: center; padding: 10px;">Username</th>
-                                    <th class="table-header progress-column" style="color: #389bb0; width: 40%; text-align: center; padding: 10px;">Progress (%)</th>
+                                    <th class="table-header username-column" style=" background-color: #eaecee; color: #2b59c3; width: 30%; text-align: center; padding: 10px; font-size: 18px;  border: 1px solid #ccc;">Username</th>
+                                    <th class="table-header progress-column" style=" background-color: #eaecee; color: #2b59c3; width: 40%; text-align: center; padding: 10px; font-size: 18px;  border: 1px solid #ccc;">Progress (%)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in user_progress %}
                                     <tr>
-                                        <td class="username-column" style="width: 30%; text-align: center; padding: 10px;">{{ item.user.username }}</td>
-                                        <td class="progress-column" style="width: 40%; text-align: center; padding: 10px;">
+                                        <td class="username-column" style="width: 30%; text-align: left; padding: 10px; border: 1px solid #ccc;">{{ item.user.username }}</td>
+                                        <td class="progress-column" style="width: 40%; text-align: center; padding: 10px; border: 1px solid #ccc;">
                                             {{ item.progress|floatformat:2 }}%
                                             <div class="progress" style="width: 100%; height: 10px; background-color: #ddd; border-radius: 5px; overflow: hidden; margin-top: 5px;">
                                                 <div class="progress-bar" style="height: 100%; width: {{ item.progress }}%; background-color: #389bb0; border-radius: 5px;"></div>
@@ -352,8 +334,16 @@ $(document).ready(function(){
 
     // Automatically open the last active tab if saved in localStorage
     var activeTab = localStorage.getItem('activeTab') || 'Tab1';
-    document.getElementById(activeTab).style.display = 'block';
-    document.querySelector(`.tablinks[onclick*='${activeTab}']`).classList.add('active');
+    var activeTabElement = document.getElementById(activeTab);
+
+    if (activeTabElement) {
+        activeTabElement.style.display = 'block';
+        document.querySelector(`.tablinks[onclick*='${activeTab}']`).classList.add('active');
+    } else {
+        console.error(`Element with ID ${activeTab} not found. Defaulting to Tab1.`);
+        document.getElementById('Tab1').style.display = 'block';  // Fallback to default tab
+        document.querySelector('.tablinks[onclick*="Tab1"]').classList.add('active');
+    }
 
     if (userType === "student") {
         $('#feedbackCarousel').carousel({

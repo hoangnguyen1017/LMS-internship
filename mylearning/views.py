@@ -3,6 +3,7 @@ from django.shortcuts import render
 from course.models import Course  # Import the Course model
 from certification.models import Certification  # Import the Certification model
 from learning_path.models import LearningPath
+from django.templatetags.static import static
 
 # def my_learning_view(request):
 #     # context setup
@@ -10,11 +11,21 @@ from learning_path.models import LearningPath
 
 def index(request):
     # Retrieve all published courses
-    courses = Course.objects.filter(published=True)
+    # courses = Course.objects.filter(published=True)
 
-    # Prepare data to be passed to the template
+    if request.user.is_authenticated:
+        # Get the courses the user is enrolled in
+        # enrolled_courses = Course.objects.filter(enrollments__user=request.user).distinct()
+        enrolled_courses = Course.objects.filter(enrollments__student=request.user).distinct()
+
+        # Add completion percentage for each course
+        for course in enrolled_courses:
+            course.completion_percent = course.get_completion_percent(request.user)
+    else:
+        enrolled_courses = Course.objects.none()
+
     course_data = []
-    for course in courses:
+    for course in enrolled_courses:
         # Calculate the completion percentage based on your logic
         completion_percentage = course.get_completion_percent(request.user)  # Assuming user is authenticated
 
@@ -25,9 +36,10 @@ def index(request):
         stars = [1 for _ in range(rating)] + [0 for _ in range(5 - rating)]  # 1 for filled stars, 0 for empty stars
 
         course_data.append({
-            'title': course.course_name,
+            'id': course.id,
+            'course_name': course.course_name,
             'description': course.description,
-            'image_url': course.image.url if course.image else './assets/img/default_course_image.png',
+            'image_url': course.image.url if course.image else static('course/images/chotbg.png'),
             'completion_percentage': completion_percentage,
             'stars': stars,  # Pass the stars list to the template
         })

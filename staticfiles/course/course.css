@@ -1,4 +1,20 @@
-/* Content */
+.section_active {
+    background-color: #2b7481; /* Consistent active state */
+    color: #ffffff; /* White text for contrast */
+    border-radius: 5px; /* Rounded corners for a softer look */
+    padding: 10px; /* Added padding for better spacing */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    transition: background-color 0.3s ease, transform 0.2s; /* Smooth transition effects */
+    transform: scale(1.02); /* Slightly enlarge when active */
+}
+
+/* Optional: Hover effect to enhance interactivity */
+.section_active:hover {
+    background-color: #246e74; /* Darker shade on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+
 #course-content body {
     margin: 0;
     padding: 0;
@@ -10,7 +26,7 @@
 }
 .sidebar {
     width: 250px;
-    background-color: #e6f2f2;
+    background-color: white;
     padding: 20px;
     box-sizing: border-box;
 }
@@ -73,7 +89,7 @@
     flex-direction: column;
 }
 .materials-list {
-    max-height: 500px; /* Set the maximum height of the container */
+    max-height: 80vh; /* Set the maximum height of the container */
     overflow-y: auto; /* Enable vertical scrollbar */
     border: 1px solid #e6f2f2;
     border-radius: 5px;
@@ -133,18 +149,19 @@ margin-bottom: 20px;
 .actions .btn:hover {
     background-color: #3a8a8a;
 }
+
 .list -group {
     margin-bottom: 0;
 }
 #course-content .list-group-item {
     padding: 10px;
-    border-bottom: 1px solid #e6f2f2;
+    border: 1px 0 0 0 solid #e6f2f2;
 }
 .list-group-item:last-child {
     border-bottom: none;
 }
 .list-group-item.active {
-    background-color: #4db3b3;
+    background-color: #3a8a8a;
     color: white;
 }
 .list-group-item a {
@@ -158,7 +175,7 @@ margin-bottom: 20px;
 .content-detail {
     flex-grow: 1;
     padding: 20px;
-    background-color: #e6f2f2;
+    background-color: white;
     border-radius: 5px;
     margin-bottom: 20px;
     color: black;
@@ -173,26 +190,30 @@ margin-bottom: 20px;
 
 /* Detail */
 #course-detail body {
-    background-color: #f0f0f0;
+    background-color: white;
     min-height: 100vh;
+    overflow-x: hidden;
+    margin: 0;
 }
 
 .background-wrapper {
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center top;
+    background-position: center;
     width: 100vw;
-    height: 50vh;
-    padding: 20px;
+    min-height: calc(100vh - 10px);
+    margin-top: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
     background-attachment: scroll;
 }
 
 .main-color {
-    background-color: #389bb0;
+    background-color: #6eb2df;
     color: white;
 }
 .main-color-text {
-    color: #389bb0;
+    color: #072Ac8;
 }
 .bold {
     font-weight: bold;
@@ -204,6 +225,10 @@ margin-bottom: 20px;
 .carousel-control {
     width: 5%;
 }
+.carousel-item-active{
+
+}
+
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     background-size: 100% 100%;
@@ -295,17 +320,30 @@ margin-bottom: 20px;
     color: black;
 }
 .tab button:hover {
-    background-color: #7fc9d9;
+    background-color: #c9e5ff;
 }
 .tab button.active {
-    background-color: #389bb0;
+    background-color: #6eb2df;
 }
 .tabcontent {
     display: none;
     padding: 20px;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     border-top: none;
 }
+.table-bordered {
+    border: 1.5px solid #ccc;
+}
+.table-bordered th, .table-bordered td {
+    border: 1.6px solid #ccc; /* Đường viền bên trong bảng đậm hơn */
+}
+.thead-light th {
+    background-color: #6eb2df; /* Màu nền cho hàng đầu bảng */
+    color: #6eb2df; /* Màu chữ trắng cho hàng đầu bảng */
+    font-weight: bold; /* Đậm chữ cho hàng đầu bảng */
+    text-align: center;
+}
+
 .instructor-table {
     width: 100%;
     border-collapse: collapse;
@@ -316,47 +354,50 @@ margin-bottom: 20px;
     text-align: left;
 }
 .instructor-table th {
-    background-color: #389bb0;
+    background-color: #2b59c3;
     color: white;
 }
 .instructor-table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
-.content-access-section {
-    align-items: center;
-    margin-top: 4rem;
-    margin-bottom: -1rem;
-    font-size: 13px;
+.session-link {
+    text-decoration: none;
+    color: #2b59c3;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.session-link:hover {
+    color: #6eb2df;
+    text-decoration: none;
+}
+
+/* Update existing session-count class */
+.session-count {
+    color: #2b59c3;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.session-count i {
+    margin-left: 10px;
 }
 .course-info-title {
-    color: black;
-    font-size: 18px;
+    color: #2b59c3;
+    font-size: 26px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 .course-info-text {
-    color: #a6aaad;
+    color: #2b59c3;
     font-size: 16px;
     margin-bottom: 5px;
     text-align: left;
     margin-left: 0;
 }
-.not-enrolled-text {
-    color: red;
-    font-size: 20px;
-}
-.enroll-link {
-    color: #389bb0;
-    font-size: 25px;
-    font-weight: bold;
-}
-.user-enroll-link {
-    color: #389bb0;
-    font-size: 25px;
-    font-weight: bold;
-}
 .num-user-link {
-    color: #389bb0;
+    color: #2b59c3;
     font-size: 25px;
     font-weight: bold;
 }
@@ -373,16 +414,18 @@ margin-bottom: 20px;
     margin-left: 0;
     margin-right: 0;
     font-size: 30px;
+    margin-top: 1px;
+    margin-bottom: 10px;
 }
 .users_enrolled_container {
     padding: 10px;
     margin-left: 0;
     font-size: 20px;
-    color: #389bb0;
+    color: #6eb2df;
 }
 #course-detail .container.text-center {
     padding: 0;
-    margin-top: -3vh;
+    margin-top: 20px;
     margin-bottom: 40px;
     background-color: #fefefe;
     border-radius: 5px;
@@ -398,7 +441,7 @@ margin-bottom: 20px;
 }
 #course-detail .col {
     background-color: #ffffff;
-    border: 1px dashed #389bb0;
+    border: 0.5px dashed #6eb2df;
     flex: 1;
     padding: 10px;
     flex-direction: column;
@@ -444,20 +487,73 @@ margin-bottom: 20px;
     border-bottom: none;
     border-right: none;
 }
-.publish-link {
-    color: #389bb0;
-    font-size: 30px;
-    text-decoration: none;
+/* Update existing styles and add new ones */
+.publish-link{
+    display: inline-block;
+    font-size: 24px;
     font-weight: bold;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.publish-link {
+    color: #2b59c3;
+}
+
+.publish-link:hover {
+    color: #2b59c3;
+    text-decoration: none;
+}
+.enroll-link{
+    font-size: 30px;
+    color: #2b59c3;
+}
+
+.enroll-link:hover {
+    color: #2b59c3;
+    font-size: 50px;
+    text-decoration: none;
+    position: relative;
     cursor: pointer;
 }
-.publish-link{
-    color: #2a7a8a;
+
+.enroll-link:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 12px;
 }
-.session-count {
-    color: black;
-    font-size: 30px;
+
+.enroll-link:hover::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #333 transparent;
 }
+
+.unenroll-link {
+    color: #dc3545;
+}
+
+.unenroll-link:hover {
+    color: #b02a37;
+    text-decoration: none;
+}
+
 .tag-list {
     display: inline;
     padding: 0;
@@ -533,32 +629,54 @@ margin-bottom: 20px;
     width: 100% !important;
 }
 /* List */
+/* Adjust pagination spacing */
+nav[aria-label="Page navigation"] {
+    margin-top: 1.4cm; /* Set spacing between course cards and pagination to 0.5cm */
+    margin-bottom: 1rem;
+}
+
+/* Remove any conflicting margins */
+.course-grid.mb-6 {
+    margin-bottom: 0.5cm; /* Adjust bottom margin to match desired spacing */
+}
+
+.course-title {
+    font-size: 3.7rem; /* Adjust this value to your desired size */
+    /* You can also add other styles if needed */
+}
 .course-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 .course-card {
+    margin-top: 1cm;
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
 }
+
 .course-card-body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    padding: 16px;
 }
+
 .course-image-container {
-    width: 100%;
-    height: 100%; /* Fixed height for image container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    margin-bottom: 1rem;
+    width: 100%;
 }
+
 .course-image {
-    width: 300px;
-    height: 200px;
+    max-width: 100%;
+    height: auto;
     object-fit: cover;
+    width: 100%;
 }
 .course-details {
     flex-grow: 1;
@@ -567,11 +685,18 @@ margin-bottom: 20px;
 }
 .course-card-footer {
     margin-top: auto;
+    gap: 0.2cm; /* Set spacing between buttons to 0.2cm */
+}
+.flex {
+    display: flex;
+    justify-content: space-between; /* Ensure space between items */
+    align-items: center; /* Center items vertically */
 }
 .search-container {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
+    margin-left: auto;
 }
 .search-input {
     width: 200px;
@@ -587,6 +712,11 @@ margin-bottom: 20px;
 }
 
 /* Edit Form */
+.custom-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
 .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -757,6 +887,76 @@ margin-bottom: 20px;
 .content-wrapper ul {
     margin-left: 20px; /* Indent left */
     margin-right: 20px; /* Indent right */
+}
+
+#content-edit .trashcan-active {
+    color: red; /* Change to your desired color */
+}
+#content-edit .title {
+    white-space: nowrap;        /* Prevent text from wrapping */
+    overflow: hidden;           /* Hide overflow text */
+    text-overflow: ellipsis;    /* Show ellipsis (...) for overflow text */
+    max-width: 150px;           /* Set your desired max width */
+}
+#content-edit .material-container {
+    display: block; /* Stack items vertically */
+    max-height: 400px; /* Set a maximum height for the container */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 15px; /* Optional padding */
+    background-color: #eaecee; /* Background color */
+    border-radius: 5px; /* Rounded corners */
+    max-width: 400px; /* Set maximum width */
+}
+#content-edit .button-section {
+    background-color: #eaecee; /* Gray background */
+    padding: 10px; /* Padding around the buttons */
+    border-radius: 5px; /* Rounded corners */
+    margin-bottom: 10px; /* Space below the button section */
+}
+
+#content-edit .content-wrapper {
+    display: flex; /* Use flexbox for layout */
+    gap: 20px; /* Space between the sections */
+
+}
+#content-edit .material-list {
+    flex: 2; /* 2 parts of the total space */
+}
+
+#content-edit .new-content {
+    flex: 4; /* 4 parts of the total space */
+    margin-left: 10px; /* Adjust as needed */
+}
+
+#content-edit .material-item {
+    display: flex; /* Use Flexbox for alignment */
+    align-items: center; /* Vertically center items */
+    justify-content: space-between; /* Space between title and icons */
+    margin-bottom: 6px;
+}
+#content-edit .material-info {
+    display: flex;
+    align-items: center; /* Align title and type vertically */
+}
+#content-edit .material-type {
+    margin-left: 10px; /* Space between title and type */
+}
+#content-edit .index-number {
+    font-weight: bold; /* Make the index number bold */
+    margin-right: 10px; /* Space between the number and title */
+}
+#session-buttons-container {
+    display: flex;
+    overflow-x: auto; /* Allow horizontal scrolling */
+    white-space: nowrap;
+    flex-grow: 1;
+    padding: 0 10px;
+    scrollbar-width: none; /* For Firefox */
+}
+
+/* For Webkit browsers (Chrome, Safari) */
+#session-buttons-container::-webkit-scrollbar {
+    display: none; /* Hide the scrollbar */
 }
 /* Reorder Material */
 .material-handle {

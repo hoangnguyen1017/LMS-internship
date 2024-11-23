@@ -31,6 +31,8 @@ class CourseFeedback(models.Model):
     practical_applications = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     support_materials = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
 
+    helpful_rate = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='helpful_rate', blank=True)
+
     # Automatically calculated mean rating
     def average_rating(self):
         return (self.course_material + self.clarity_of_explanation +

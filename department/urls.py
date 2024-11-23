@@ -6,7 +6,6 @@ app_name = 'department'
 urlpatterns = [
     # Location URLs
     path('locations/', views.location_list, name='location_list'),
-    path('locations/<int:pk>/', views.location_detail, name='location_detail'),
     path('locations/new/', views.location_create, name='location_create'),
     path('locations/<int:pk>/edit/', views.location_update, name='location_update'),
     path('locations/delete/', views.location_delete, name='location_delete'),

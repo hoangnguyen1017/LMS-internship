@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from .models import AssessmentType, Assessment, InvitedCandidate, StudentAssessmentAttempt, UserAnswer, UserSubmission
+from .models import AssessmentType, Assessment, InvitedCandidate, StudentAssessmentAttempt, UserAnswer
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget
 from course.models import Course

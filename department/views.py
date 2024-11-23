@@ -9,18 +9,19 @@ from .admin import DepartmentResource
 from import_export.formats.base_formats import XLSX, JSON, YAML, CSV, TSV
 from django.http import HttpResponse
 from tablib import Dataset
-
+from main.module_utils import get_grouped_modules
 @login_required
 def department_list(request):
     query = request.GET.get('search', '')  # Sửa đổi ở đây nếu cần
     departments = Department.objects.filter(name__icontains=query).order_by('name')
-    
+    module_groups, grouped_modules = get_grouped_modules(request.user, request.session.get('temporary_role'))
     # Phân trang
     paginator = Paginator(departments, 5)  # 5 phòng ban mỗi trang
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'department_list.html', {'page_obj': page_obj, 'query': query})
+    return render(request, 'department_list.html', {'page_obj': page_obj, 'query': query,'module_groups': module_groups,
+        'grouped_modules': grouped_modules})
 
 
 @login_required
@@ -70,18 +71,15 @@ def department_delete(request):
 def location_list(request):
     query = request.GET.get('search', '')
     locations = Location.objects.filter(name__icontains=query).order_by('name')  # Sắp xếp theo tên
-
+    module_groups, grouped_modules = get_grouped_modules(request.user, request.session.get('temporary_role'))
     # Phân trang
     paginator = Paginator(locations, 5)  # 5 địa điểm mỗi trang
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'location_list.html', {'page_obj': page_obj, 'query': query})
+    return render(request, 'location_list.html', {'page_obj': page_obj, 'query': query,'module_groups': module_groups,
+        'grouped_modules': grouped_modules})
 
-@login_required
-def location_detail(request, pk):
-    location = get_object_or_404(Location, pk=pk)
-    return render(request, 'location_detail.html', {'location': location})
 
 @login_required
 def location_create(request):

@@ -1,0 +1,22 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'student_enrollment' %}active{% endif %}" href="{% url 'reports:student_enrollment_report' %}">
+            Student Enrollment
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'user_progress' %}active{% endif %}" href="{% url 'reports:user_progress_report' %}">
+            User Progress
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'user_progress' %}active{% endif %}" href="{% url 'reports:check_dropout_users' %}">
+            Check Dropout Users
+        </a>
+    </li>
+    <li class="nav-item ms-auto">
+        <a href="{% url 'reports:report_dashboard' %}" class="btn btn-secondary">Back to Reports</a>
+    </li>
+    
+    
+</ul>

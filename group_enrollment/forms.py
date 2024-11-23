@@ -8,12 +8,20 @@ class EnrollmentForm(forms.ModelForm):
         model = Enrollment
         fields = ['course']
         widgets = {
-            'course': forms.Select(attrs={'class': 'form-control'}),  # Bootstrap class added here
+            'course': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Get the user from kwargs
         super().__init__(*args, **kwargs)
-        self.fields['course'].queryset = Course.objects.all()  # You can customize the queryset as needed
+        
+        # Filter queryset: only published courses that the user hasn't enrolled in
+        if user:
+            enrolled_courses = Enrollment.objects.filter(student=user).values_list('course_id', flat=True)
+            self.fields['course'].queryset = Course.objects.filter(
+                published=True
+            ).exclude(id__in=enrolled_courses)
+
 
 class AdminEnrollmentForm(forms.Form):
     course = forms.ModelChoiceField(queryset=Course.objects.all(), required=True)

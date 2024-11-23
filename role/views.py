@@ -1,61 +1,100 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Role
-from .forms import RoleForm, ExcelImportForm
+from role.models import Role, RoleModule
+from role.forms import RoleForm, ExcelImportForm
 import pandas as pd
 from django.contrib import messages
-
-# from module_group.models import ModuleGroup
-
 from django.http import HttpResponse
 import openpyxl
-
-# Role views
-
+from module_group.models import ModuleGroup, Module
+from django.contrib.auth.models import Permission
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from user.models import Profile
+from .admin import RoleResource
+from tablib import Dataset
+from django.core.files.uploadedfile import UploadedFile
 
 def role_list(request):
-    roles = Role.objects.all()  # Lấy danh sách các role
-    # module_groups = ModuleGroup.objects.all()
+    roles = Role.objects.all()  # Lấy danh sách tất cả các role
+    role_modules = RoleModule.objects.all()  # Lấy tất cả RoleModule (Role - Module liên kết)
 
-    form = ExcelImportForm()
+    form = ExcelImportForm()  # Form nhập liệu Excel (nếu có)
 
-    return render(request, 'role_list.html', { 'roles': roles, 'form': form})
-
-def insert_role(role_id, role_name):
-    try:
-        Role.objects.create(
-            role_id=role_id,
-            role_name=role_name
-        )
-        return True, None
-    except Exception as e:
-        return False, str(e)
+    return render(request, 'role_list.html', {
+        'roles': roles,
+        'form': form,
+        'role_modules': role_modules
+    })
 
 
-def role_add(request):
-    
+def role_add(request, role_id=None):
+    if role_id:  # Nếu đang chỉnh sửa một role hiện có
+        role = get_object_or_404(Role, id=role_id)
+        form = RoleForm(request.POST or None, instance=role)
+    else:  # Nếu đang tạo mới một role
+        role = None
+        form = RoleForm(request.POST or None)
+
+    all_modules = Module.objects.all()  # Lấy tất cả các module
 
     if request.method == 'POST':
-        form = RoleForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_role = form.save()  # Lưu role
+            selected_modules_ids = request.POST.getlist('modules')  # Lấy danh sách module được chọn
+
+            # Cập nhật RoleModule (thêm hoặc xóa các module liên quan)
+            RoleModule.objects.filter(role=new_role).delete()  # Xóa các liên kết cũ
+            for module_id in selected_modules_ids:
+                module = Module.objects.get(id=module_id)
+                RoleModule.objects.create(role=new_role, module=module)
+
+            # Thông báo thành công và chuyển hướng
+            messages.success(request, 'Role and associated modules have been successfully added/updated.')
             return redirect('role:role_list')
-    else:
-        form = RoleForm()
-    return render(request, 'role_form.html', {'form': form,})
+
+    # Xác định các module đã được chọn (nếu đang chỉnh sửa)
+    selected_modules = (
+        RoleModule.objects.filter(role=role).values_list('module', flat=True) if role else []
+    )
+
+    context = {
+        'form': form,
+        'all_modules': all_modules,
+        'selected_modules': selected_modules,
+    }
+    return render(request, 'role_form.html', context)
 
 def role_edit(request, pk):
-    
+    role = get_object_or_404(Role, pk=pk)  # Lấy role cần chỉnh sửa
+    form = RoleForm(request.POST or None, instance=role)  # Tạo form liên kết với role
+    all_modules = Module.objects.all()  # Lấy danh sách tất cả module
 
-    role = get_object_or_404(Role, pk=pk)
     if request.method == 'POST':
-        form = RoleForm(request.POST, instance=role)
         if form.is_valid():
-            form.save()
-            return redirect('role:role_list')
-    else:
-        form = RoleForm(instance=role)
+            updated_role = form.save()  # Lưu role
 
-    return render(request, 'role_form.html', {'form': form,})
+            # Lấy danh sách module được chọn từ form
+            selected_modules_ids = request.POST.getlist('modules')
+
+            # Cập nhật RoleModule (xóa các liên kết cũ và thêm mới)
+            RoleModule.objects.filter(role=updated_role).delete()  # Xóa liên kết cũ
+            for module_id in selected_modules_ids:
+                module = Module.objects.get(id=module_id)
+                RoleModule.objects.create(role=updated_role, module=module)
+
+            # Thông báo thành công và chuyển hướng
+            messages.success(request, 'Role and associated modules have been successfully updated.')
+            return redirect('role:role_list')
+
+    # Lấy danh sách module đã được chọn để hiển thị
+    selected_modules = RoleModule.objects.filter(role=role).values_list('module', flat=True)
+
+    context = {
+        'form': form,
+        'all_modules': all_modules,
+        'selected_modules': selected_modules,
+    }
+    return render(request, 'role_form.html', context)
 
 
 def role_delete(request, pk):
@@ -66,112 +105,150 @@ def role_delete(request, pk):
     return render(request, 'role_confirm_delete.html', {'role': role})
 
 
-# Export Roles to Excel
 def export_roles(request):
-    # Create a workbook and add a worksheet
+    # Tạo resource
+    resource = RoleResource()
+    queryset = Role.objects.all()
+
+    # Xuất dữ liệu
+    dataset = resource.export(queryset)
+
+    # Tạo phản hồi với định dạng Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=lms_roles.xlsx'
-    
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.active
-    worksheet.title = 'Roles'
-    
-    # Define the columns
-    columns = ['role_name']  # Cột cho ID và Tên vai trò
-    worksheet.append(columns)
-    
-    # Fetch all roles and write to the Excel file
-    for role in Role.objects.all():
-        worksheet.append([role.role_name])  # Xuất ID và Tên vai trò
-    
-    workbook.save(response)
+
+    # Ghi dữ liệu vào phản hồi dưới dạng XLSX
+    response.write(dataset.xlsx)  # Đảm bảo sử dụng đúng phương thức để xuất ra xlsx
+
     return response
 
 
+
 def import_roles(request):
+    resource = RoleResource()
+
     if request.method == 'POST':
-        form = ExcelImportForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['excel_file']
-            try:
-                df = pd.read_excel(uploaded_file)
-                roles_imported = 0  # Counter for imported roles
+        uploaded_file = request.FILES.get('file')
 
-                for index, row in df.iterrows():
-                    role_name = row.get("role_name")  # Assuming you only need role_name
-
-                    print(f"Processing row: {role_name}")  # Debugging
-
-                    # Check if the role already exists
-                    if not Role.objects.filter(role_name=role_name).exists():
-                        # Create and save the new role
-                        Role.objects.create(
-                            role_name=role_name
-                        )
-                        roles_imported += 1
-                        print(f"Role '{role_name}' created")  # Debugging
-                    else:
-                        messages.warning(request, f"Role '{role_name}' already exists. Skipping.")
-                        print(f"Role '{role_name}' already exists")  # Debugging
-
-                if roles_imported > 0:
-                    messages.success(request, f"{roles_imported} roles imported successfully!")
-                else:
-                    messages.warning(request, "No roles were imported.")
-
-            except Exception as e:
-                messages.error(request, f"An error occurred during import: {e}")
-                print(f"Error during import: {e}")  # Debugging
-
+        # Kiểm tra xem file có được tải lên không
+        if not uploaded_file:
+            messages.error(request, "Không tìm thấy tệp tin để nhập.")
             return redirect('role:role_list')
-    else:
-        form = ExcelImportForm()
 
-    return render(request, 'role_list.html', {'form': form})
+        if uploaded_file.size == 0:  # Kiểm tra nếu tệp rỗng
+            messages.error(request, "Tệp không được để trống.")
+            return redirect('role:role_list')
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from user.models import Profile
+        file_format = uploaded_file.name.split('.')[-1].lower()
+        dataset = Dataset()
+
+        # Xử lý định dạng tệp
+        formats = {
+            'csv': lambda: dataset.load(uploaded_file.read().decode('utf-8'), format='csv'),
+            'json': lambda: dataset.load(uploaded_file.read().decode('utf-8'), format='json'),
+            'yaml': lambda: dataset.load(uploaded_file.read().decode('utf-8'), format='yaml'),
+            'tsv': lambda: dataset.load(uploaded_file.read().decode('utf-8'), format='tsv'),
+            'xlsx': lambda: dataset.load(uploaded_file.read(), format='xlsx'),
+        }
+
+        # Kiểm tra và xử lý tệp
+        try:
+            if file_format in formats:
+                formats[file_format]()  # Gọi hàm xử lý định dạng
+            else:
+                messages.error(request, "Định dạng tệp không hợp lệ. Hỗ trợ các định dạng: csv, json, yaml, tsv, xlsx.")
+                return redirect('role:role_list')
+        except Exception as e:
+            messages.error(request, f"Lỗi khi đọc tệp: {e}")
+            return redirect('role:role_list')
+
+        # Kiểm tra và nhập dữ liệu
+        result = resource.import_data(dataset, dry_run=True)
+
+        if not result.has_validation_errors():
+            resource.import_data(dataset, dry_run=False)
+            messages.success(request, "Người dùng đã được nhập thành công!")
+        else:
+            invalid_rows = result.invalid_rows
+            error_messages = [f"Lỗi tại hàng {row['row']}: {row['error']}" for row in invalid_rows]
+            messages.error(request, "Có lỗi khi nhập người dùng:\n" + "\n".join(error_messages))
+
+        return redirect('role:role_list')
+
+    messages.error(request, "Không thể nhập người dùng.")
+    return redirect('role:role_list')
+
 
 @login_required
 def select_role(request):
     if request.method == 'POST':
-        selected_role_id = request.POST.get('role')
-        if selected_role_id:
+        selected_role_name = request.POST.get('role')  # Lấy role_name thay vì id
+        if selected_role_name:
             try:
-                role = Role.objects.get(id=selected_role_id)
-                
-                # Lưu role vào session cho superuser
+                role = Role.objects.get(role_name=selected_role_name)
                 if request.user.is_superuser:
-                    request.session['temporary_role'] = role.id
-                    messages.success(request, "Role đã được lưu tạm thời.")
+                    request.session['temporary_role'] = role.role_name
+                    messages.success(request, "Vai trò tạm thời đã được lưu.")
                 else:
-                    # Cập nhật role cho user không phải superuser (nếu cần)
                     profile = Profile.objects.get(user=request.user)
                     profile.role = role
                     profile.save()
-                    messages.success(request, "Role đã được cập nhật.")
-                    
+                    messages.success(request, "Vai trò đã được cập nhật.")
             except Role.DoesNotExist:
-                messages.error(request, "Role không tồn tại.")
+                messages.error(request, "Vai trò không tồn tại.")
             except Profile.DoesNotExist:
-                messages.error(request, "User này chưa có profile.")
+                messages.error(request, "User này chưa có hồ sơ.")
         else:
-            messages.warning(request, "Vui lòng chọn một role.")
-    return redirect('main:home')  # Chuyển hướng về trang chính hoặc trang bạn muốn
+            messages.warning(request, "Vui lòng chọn một vai trò.")
+    return redirect('main:home')
+
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def reset_role(request):
     if request.method == 'POST':
-        if request.user.is_authenticated:
-            # Xóa vai trò tạm thời khỏi session
-            if 'temporary_role' in request.session:
-                del request.session['temporary_role']
-                messages.success(request, "Role has been reset successfully.")
-            else:
-                messages.info(request, "No temporary role to reset.")
+        # Xóa role tạm thời khỏi session
+        if 'temporary_role' in request.session:
+            del request.session['temporary_role']
+            messages.success(request, "Vai trò tạm thời đã được đặt lại. Bạn đã khôi phục quyền superuser.")
         else:
-            messages.error(request, "You need to be logged in to reset your role.")
+            messages.info(request, "Không có vai trò tạm thời nào để đặt lại.")
 
-    return redirect('main:home')  # Redirect về trang chính hoặc nơi bạn muốn
+    return redirect('main:home')
+
+
+def role_permissions(request, role_id):
+    role = get_object_or_404(Role, id=role_id)
+
+    specific_permissions = Role._meta.permissions
+    all_permissions = Permission.objects.filter(
+        codename__in=[codename for codename, _ in specific_permissions]
+    )
+    
+    all_modules = Module.objects.all()
+    selected_modules = role.modules.all()
+    
+    if request.method == "POST":
+        selected_permissions = request.POST.getlist('permissions')
+        selected_modules_ids = request.POST.getlist('modules')
+        
+        # Update permissions and modules for the role
+        role.permissions.set(Permission.objects.filter(id__in=selected_permissions))
+        role.modules.set(Module.objects.filter(id__in=selected_modules_ids))
+        role.save()
+
+        # Add a success message
+        messages.success(request, 'Permissions and modules updated successfully.')
+
+        # Redirect to role list after saving
+        return redirect('role:role_list')
+
+    context = {
+        'role': role,
+        'all_permissions': all_permissions,
+        'selected_permissions': role.permissions.all(),
+        'all_modules': all_modules,
+        'selected_modules': selected_modules,
+    }
+    return render(request, 'role_permission.html', context)

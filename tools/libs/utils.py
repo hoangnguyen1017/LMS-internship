@@ -1,10 +1,10 @@
-# import streamlit as st
+
 import pandas as pd
 import json
 import re
-from mitosheet.streamlit.v1 import spreadsheet
+
 from io import BytesIO
-from streamlit_option_menu import option_menu
+
 from docx import Document
 
 # Function to generate exams
@@ -52,22 +52,25 @@ def clean_text(text):
 def excel_to_json(data):
     # Prepare the JSON structure
     output_structure = {"mc_questions": []}
+    print(data)
 
     for index, row in data.iterrows():
         try:
+
+            print(index)
             # Extract question and answers
-            answers = [row[f'options[{label}]'] for label in 'ABCDEFG' if pd.notnull(row[f'options[{label}]'])]
+            answers = [row[f'options[{label.lower()}]'] for label in 'ABCDEFG' if pd.notnull(row[f'options[{label.lower()}]'])]
             correct_label = row['correct'].strip().upper()
             # Arrange answers based on the correct label
             arranged_answers = arrange_answers(answers, correct_label) if correct_label in 'ABCDEFG' else answers
 
             cleaned_question = clean_text(str(row['question']))
-            cleaned_answers = [clean_text(f"{chr(65 + i)}- {answer}") for i, answer in enumerate(arranged_answers)]
+            cleaned_answers = [clean_text(str(answer)) for answer in arranged_answers]
+
 
             question_data = {
                 "question": cleaned_question,
-                "answers": cleaned_answers,
-                "correct": correct_label  # Thêm trường correct vào đây
+                "answers": cleaned_answers
             }
             # Add the question data to the list
             output_structure["mc_questions"].append(question_data)
@@ -130,55 +133,4 @@ def word_to_json(content):
     
     return json_data
 
-def txt_to_json(texts):
-    """Chuyển đổi danh sách các chuỗi văn bản thành định dạng JSON."""
-    json_output = {
-        "mc_questions": []
-    }
 
-    # Xử lý từng đoạn văn bản trong texts
-    for text in texts:
-        question = {
-            "question_text": text.strip(),  # Dữ liệu câu hỏi
-            "options": []  # Tùy chọn có thể được thêm vào sau
-        }
-        json_output["mc_questions"].append(question)
-
-    # Trả về chuỗi JSON
-    return json.dumps(json_output, indent=4, ensure_ascii=False)
-
-
-# # Streamlit UI code
-# st.title("Question Generator")
-
-# # Tab để chọn
-# with st.sidebar:
-#     selected = option_menu("Menu", ["Excel to JSON", "Word to JSON"], 
-#                            icons=['file-earmark-excel', 'file-earmark-word'], 
-#                            menu_icon="cast", default_index=0)
-
-# if selected == "Excel to JSON":
-#     st.subheader("Upload Excel File")
-#     excel_file = st.file_uploader("Choose an Excel file", type=["xlsx", "xls"])
-#     number_of_questions = st.text_input("Number of questions per sheet (e.g., {'Sheet1': 5})")
-    
-#     if st.button("Generate Questions"):
-#         if excel_file and number_of_questions:
-#             try:
-#                 number_of_questions_dict = eval(number_of_questions)  # Chuyển đổi chuỗi thành dict
-#                 output, df_combined = generator(excel_file, number_of_questions_dict)
-#                 json_output = excel_to_json(df_combined)
-#                 st.download_button("Download JSON", json_output, "output.json", "application/json")
-#             except Exception as e:
-#                 st.error(f"Error: {e}")
-# else:
-#     st.subheader("Upload Word File")
-#     word_file = st.file_uploader("Choose a Word file", type=["docx"])
-    
-#     if st.button("Convert to JSON"):
-#         if word_file:
-#             try:
-#                 json_output = word_to_json(word_file)
-#                 st.json(json_output)  # Hiển thị kết quả JSON
-#             except Exception as e:
-#                 st.error(f"Error: {e}")

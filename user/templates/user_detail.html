@@ -1,107 +1,136 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{{ user.first_name }} {{ user.last_name }} | Profile{% endblock %}
 {% load custome_filters %}
 
 {% block content %}
-<div class="container-fluid mt-5">
+<div class="container-fluid mt-3">
     <div class="row">
-        <div class="col-md-3">
-    <div class="bg-white text-black p-3 rounded text-center position-fixed" style="max-width: 400px; height: 300px;">
-        <div class="avatar-wrapper mb-3 d-flex justify-content-center align-items-center" 
-            style="width: 100px; height: 100px; overflow: hidden; margin: 0 auto;">
-            {% if user.profile.profile_picture_url and user.profile.profile_picture_url != "http://127.0.0.1:8000/user/add/" %}
-                <img src="{{ user.profile.profile_picture_url }}" class="img-fluid rounded-circle" style="max-width: 100%; max-height: 100%; object-fit: cover;">
-            {% else %}
-                <i class="fas fa-user img-fluid rounded-circle" style="font-size: 70px;"></i>
-            {% endif %}
-        </div>
+        <div class="col-md-3 mt-5">
+            <!-- Sidebar với thông tin người dùng -->
+            <div class="card shadow-sm p-3 mb-4" style="position: sticky; top: 2rem;">
+                <div class="avatar-wrapper mb-3 d-flex justify-content-center align-items-center mt-4">
+                    <img src="{% if user.profile.profile_picture_url %}{{ user.profile.profile_picture_url }}{% else %}{% static 'images/avatar.png' %}{% endif %}" 
+                         class="img-fluid rounded-circle" style="width: 10rem; height: 10rem; object-fit: cover;" alt="{{ user.username }}">
+                </div>
 
-        <h4 class="mb-4 text-truncate" style="font-size: 1rem; width: 250px; white-space: nowrap; overflow: hidden;">{{ user.first_name }} {{ user.last_name }}</h4>
+                <h5 class="text-center">{{ user.first_name }} {{ user.last_name }}</h5>
 
+                <ul class="list-group list-group-flush mt-3">
+                    <li class="list-group-item">
+                        <a href="#profileCard" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="#CourseCard" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                            <i class="fas fa-book me-2"></i> Courses
+                        </a>
+                    </li>
+                    {% if is_student %}
+                        <li class="list-group-item">
+                            <a href="#quizResultsCard" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                                <i class="fas fa-pencil-alt me-2"></i> Quiz Results
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item">
+                        <a href="#activityLogCard" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                            <i class="fas fa-history me-2"></i> Activity Log
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="#editPasswordCard" class="text-dark d-flex align-items-center" style="text-decoration: none;" onclick="togglePasswordForm(event)">
+                            <i class="fas fa-edit me-2"></i> Edit Profile
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <!-- Cài đặt -->
+                        <a class="dropdown-item d-flex align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#settingsCollapse" aria-expanded="true" aria-controls="settingsCollapse">
+                            <i class="fas fa-cogs me-2"></i> Settings and privacy
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </a>
+                    </li>
+                    
+                    <!-- Thả xuống Cài đặt -->
+                    <ul class="collapse dropdown-menu-end ms-2" id="settingsCollapse">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="#" data-bs-toggle="collapse" data-bs-target="#twoFAOptions" aria-expanded="true" aria-controls="twoFAOptions">
+                                <i class="fas fa-shield-alt me-2"></i> Security 2FA
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </a>
+                        </li>
+                    
+                        <ul class="collapse list-unstyled" id="twoFAOptions">
+                            {% if not user.is_superuser %}  <!-- Kiểm tra nếu không phải là superuser -->
+                                <li>
+                                    <form action="{% url 'main:toggle_2fa' pk=user.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item d-flex align-items-center">
+                                            <i class="fas {% if user.profile.two_fa_enabled %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %} me-2"></i>
+                                            {% if user.profile.two_fa_enabled %}
+                                                <span class="text-success">Off 2FA</span>
+                                            {% else %}
+                                                <span class="text-danger">On 2FA</span>
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                            {% endif %}
+                    
+                            <li class="dropdown-item">
+                                {% if user.profile.two_fa_enabled %}
+                                    <i class="fas fa-check-circle text-success me-2"></i> 2FA is on
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger me-2"></i> 2FA is off
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </ul>
+                    
+                </ul>
+            </div>
+        </div>        
 
-
-        <ul class="list-group">
-            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
-                <a href="#profileCard" class="text-black d-flex align-items-center w-100">
-                    <i class="fas fa-user blink-icon me-2"></i>
-                    <span>PROFILE</span>
-                </a>
-            </li>
-            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
-                <a href="#CourseCard" class="text-black d-flex align-items-center w-100">
-                    <i class="fas fa-book blink-icon me-2"></i>
-                    <span>COURSES</span>
-                </a>
-            </li>
-            {% if is_student %}
-                <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
-                    <a href="#quizResultsCard" class="text-black d-flex align-items-center w-100">
-                        <i class="fas fa-pencil-alt blink-icon me-2"></i>
-                        <span>QUIZ RESULTS</span>
-                    </a>
-                </li>
-            {% endif %}
-            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
-                <a href="#activityLogCard" class="text-black d-flex align-items-center w-100">
-                    <i class="fas fa-history blink-icon me-2"></i>
-                    <span>ACTIVITY LOG</span>
-                </a>
-            </li>
-            <li class="list-group-item bg-white d-flex align-items-center justify-content-center">
-                <a href="#editPasswordCard" class="text-black d-flex align-items-center w-100" onclick="togglePasswordForm(event)">
-                    <i class="fas fa-edit blink-icon me-2"></i>
-                    <span>EDIT PROFILE</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
-
-        
-        
-
+        <!-- Phần chính với thông tin chi tiết -->
         <div class="col-md-9">
-            <div class="card mb-4" id="profileCard">
-                <div class="card-header bg-white text-black text-center">
+            <!-- Profile Card -->
+            <div class="card mb-4 shadow-sm" id="profileCard">
+                <div class="card-header bg-dark text-white text-center">
                     <strong>Profile</strong>
                 </div>
                 <div class="card-body">
                     <div class="row mb-2">
-                        <div class="col-6 text-start"><strong>ID:</strong>
-                            {% if is_student %}
-                                {{ student_code }}
-                            {% else %}
-                                {{ user.id }}
-                            {% endif %}
-                        </div>
-                        <div class="col-6 text-start"><strong>Username:</strong> {{ user.username }}</div>
+                        <div class="col-6"><strong>ID:</strong> {{ user.id }}</div>
+                        <div class="col-6"><strong>Username:</strong> {{ user.username }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-6 text-start"><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</div>
-                        <div class="col-6 text-start"><strong>Role:</strong> {{ user.profile.role.role_name|default:"N/A" }}</div>
+                        <div class="col-6"><strong>Full Name:</strong> {{ user.first_name }} {{ user.last_name }}</div>
+                        <div class="col-6"><strong>Role:</strong> {{ user.profile.role.role_name|default:"N/A" }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-12 text-start"><strong>Email:</strong> {{ user.email }}</div>
+                        <div class="col-12"><strong>Email:</strong> {{ user.email }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-12 text-start"><strong>Bio:</strong> {{ user.profile.bio|default:"N/A" }}</div>
+                        <div class="col-12"><strong>Bio:</strong> {{ user.profile.bio|default:"N/A" }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-12 text-start"><strong>Interests:</strong> {{ user.profile.interests|default:"N/A" }}</div>
+                        <div class="col-12"><strong>Interests:</strong> {{ user.profile.interests|default:"N/A" }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="card mb-4" id="CourseCard">
-                <div class="card-header bg-white text-black text-center">
+            <!-- Courses Enrolled -->
+            <div class="card mb-4 shadow-sm" id="CourseCard">
+                <div class="card-header bg-dark text-white text-center">
                     <strong>Courses Enrolled</strong>
                 </div>
                 <div class="card-body">
                     {% if enrollments %}
-                        <ul class="list-group">
+                        <ul class="list-group list-group-flush">
                             {% for enrollment in enrollments %}
                                 <li class="list-group-item">
-                                    <span class="fw-bold"> {{ enrollment.course }}</span> - 
+                                    <span class="fw-bold">{{ enrollment.course }}</span> - 
                                     <span class="fst-italic">Enrollment Date: {{ enrollment.date_enrolled|date:"H:i d-m-Y" }}</span>
                                 </li>
                             {% endfor %}
@@ -111,14 +140,33 @@
                     {% endif %}
                 </div>
             </div>
+            {% if is_instructor %}
+                <div class="card mb-4 shadow-sm" id="CourseCard">
+                    <div class="card-header bg-dark text-white text-center">
+                        <strong>Taught Courses</strong>
+                    </div>
+                    <div class="card-body">
+                        {% if taught_courses %}
+                            <ul class="list-group list-group-flush fw-bold">
+                                {% for course in taught_courses %}
+                                    <li class="list-group-item">{{ course.course_name }} ({{ course.course_code }})</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No Taught Course</p>  <!-- Hiển thị "None" nếu không có khóa học -->
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
 
             {% if is_student %}
-                <div class="card mb-4" id="quizResultsCard">
-                    <div class="card-header bg-white text-black text-center">
+                <!-- Quiz Results Card -->
+                <div class="card mb-4 shadow-sm" id="quizResultsCard">
+                    <div class="card-header bg-dark text-white text-center">
                         <strong>Quiz Results</strong>
                     </div>
                     <div class="card-body">
-                        <table class="table table-striped w-100">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Quiz Title</th>
@@ -142,12 +190,13 @@
                 </div>
             {% endif %}
 
-            <div class="card mb-4" id="activityLogCard">
-                <div class="card-header bg-white text-black text-center">
+            <!-- Activity Log -->
+            <div class="card mb-4 shadow-sm" id="activityLogCard">
+                <div class="card-header bg-dark text-white text-center">
                     <strong>User Activity Log</strong>
                 </div>
-                <div class="card-body activity-log" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-striped w-100">
+                <div class="card-body" style="max-height: 15rem; overflow-y: auto;">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Activity Type</th>
@@ -164,28 +213,28 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="3">No activity records found.</td>
+                                    <td colspan="3" class="text-center">No activity records found.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
-            
-            
-            <div class="card mb-4" id="editPasswordCard">
-                <div class="card-header bg-white text-black d-flex justify-content-between align-items-center">
+
+            <!-- Edit Profile -->
+            <div class="card mb-4 shadow-sm" id="editPasswordCard">
+                <div class="card-header bg-dark text-white text-center">
                     <strong>Edit Profile</strong>
                 </div>
                 <div class="card-body">
-                    <div id="password-form" style="display: none;">
+                    <div id="password-form" class="d-none">
                         <form method="POST" action="{% url 'user:user_edit_password' user.pk %}" class="d-flex align-items-center">
                             {% csrf_token %}
                             <input type="password" class="form-control me-2" id="old_password" name="old_password" placeholder="Enter your password to proceed" required>
                             <button type="submit" class="btn btn-warning">Submit</button>
                         </form>
                     </div>
-                </div>
+                </div>                
             </div>
         </div>
     </div>
@@ -195,7 +244,7 @@
     function togglePasswordForm(event) {
         event.preventDefault();
         var form = document.getElementById('password-form');
-        form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
+        form.classList.toggle("d-none");
         document.getElementById('editPasswordCard').scrollIntoView({ behavior: 'smooth' });
     }
 </script>

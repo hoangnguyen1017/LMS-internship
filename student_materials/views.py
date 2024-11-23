@@ -10,6 +10,7 @@ import os
 import mimetypes
 from subject.models import *
 
+from module_group.models import Module, ModuleGroup
 
 def subject_list(request):
     # Get the current user
@@ -33,7 +34,12 @@ def subject_list(request):
     # Use the related name 'programs' defined in TrainingProgram model
     subjects = Subject.objects.filter(programs__in=user_training_programs)
 
-    return render(request, 'subject/subject_list.html', {'subjects': subjects})
+    module_groups = ModuleGroup.objects.prefetch_related('modules').all()
+    return render(request, 'subject/subject_list.html', 
+        {
+            'subjects': subjects,
+            'module_groups': module_groups,
+        })
 
 
 

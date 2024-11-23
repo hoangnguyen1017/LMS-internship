@@ -12,7 +12,6 @@ urlpatterns = [
     path('<int:pk>/delete/', views.module_group_delete, name='module_group_delete'),
     path('import/modulegroups', views.import_module_groups, name='import_module_groups'),
     path('export/modulegroups', views.export_module_groups, name='export_module_groups'),
-    
     # Module URLs
     path('modules/', views.module_list, name='module_list'),
     path('modules/add/', views.module_add, name='module_add'),
@@ -21,4 +20,5 @@ urlpatterns = [
     path('modules/<int:pk>/delete/', views.module_delete, name='module_delete'),
     path('import/modules', views.import_modules, name='import_modules'),
     path('export/modules', views.export_modules, name='export_modules'),
+    
 ]

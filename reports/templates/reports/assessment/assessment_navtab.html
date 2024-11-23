@@ -1,0 +1,25 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'session_overview' %}active{% endif %}" href="{% url 'reports:session_overview_report' %}">
+            Session Overview
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'enrollment_trends' %}active{% endif %}" href="{% url 'reports:enrollment_trends_report' %}">
+            Enrollment Trends
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'tag_report' %}active{% endif %}" href="{% url 'reports:tag_report' %}">
+            Tag Report
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'instructor_performance' %}active{% endif %}" href="{% url 'reports:instructor_performance_report' %}">
+            Instructor Performance
+        </a>
+    </li>
+    <li class="nav-item ms-auto">
+        <a href="{% url 'reports:report_dashboard' %}" class="btn btn-secondary">Back to Reports</a>
+    </li>
+</ul>

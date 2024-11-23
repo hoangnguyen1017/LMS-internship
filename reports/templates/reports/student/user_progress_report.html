@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <!-- Include Tab Navigation -->
+    {% include 'reports/student/student_navtab.html' with active_tab='user_progress' %}
+
+    <h1>User Progress Report</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Material</th>
+                <th>Session</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for progress in progress %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ progress.material.title }}</td>
+                <td>{{ progress.session.name }}</td>
+                <td>{{ progress.completed }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

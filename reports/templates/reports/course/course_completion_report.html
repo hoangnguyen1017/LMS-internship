@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <h1>Course Completion Report</h1>
+
+    <!-- Chart and Progress Table Section -->
+    <div class="row">
+        <!-- Charts Section -->
+        <div class="col-lg-8 col-md-12 mb-4">
+            <div class="row">
+                {% for course, progress in course_progress.items %}
+                <div class="col-md-4 col-sm-12 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ course.course_name }}</h5>
+                            <canvas id="chart_{{ forloop.counter }}" width="150" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const ctx = document.getElementById('chart_{{ forloop.counter }}').getContext('2d');
+                        
+                        // Count the number of completed and not completed users
+                        let completed = 0;
+                        let notCompleted = 0;
+
+                        {% for user, data in progress.items %}
+                            {% if data.progress == 100 %}
+                                completed += 1;
+                            {% else %}
+                                notCompleted += 1;
+                            {% endif %}
+                        {% endfor %}
+                        
+                        const completionChart = new Chart(ctx, {
+                            type: 'bar',  // Use bar chart for stacked bars
+                            data: {
+                                labels: ['Completed', 'Not Completed'],
+                                datasets: [{
+                                    label: '{{ course.course_name }}',  // Label for each course
+                                    data: [completed, notCompleted],  // Completed vs Not Completed
+                                    backgroundColor: [
+                                        'rgba(75, 192, 192, 1)',  // Completed (green)
+                                        'rgba(192, 192, 192, 1)'  // Not Completed (gray)
+                                    ],
+                                    borderColor: [
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(192, 192, 192, 1)'
+                                    ],
+                                    borderWidth: 1,
+                                    stack: 'stack1'  // Stack the bars on top of each other
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    x: {
+                                        stacked: true,  // Enable stacked bars
+                                    },
+                                    y: {
+                                        stacked: true,  // Enable stacked bars
+                                    }
+                                },
+                                plugins: {
+                                    legend: { position: 'top' },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                return tooltipItem.dataset.label + ': ' + tooltipItem.raw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="col-lg-12 col-md-12 mb-4">
+                <!-- Lặp qua tất cả các khóa học -->
+                {% for course, users in course_progress.items %}
+                <div class="card mb-4">
+                    <!-- Tiêu đề khóa học -->
+                    <div class="card-header bg-primary text-white text-center">
+                        <strong>{{ course.course_name }}</strong>
+                    </div>
+                    <div class="card-body">
+                        <!-- Bảng con cho khóa học -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr class="text-center">
+                                        <th>User</th>
+                                        <th>Progress (%)</th>
+                                        <th>Enrolled At</th>
+                                        <th>Progress Change (%)</th>
+                                        <th>Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user, progress_data in users.items %}
+                                    <tr>
+                                        <td class="text-center">{{ user.username }}</td>  <!-- Người dùng -->
+                                        <td class="text-center">{{ progress_data.progress }}%</td>  <!-- Tiến độ -->
+                                        <td class="text-center">
+                                            {% if progress_data.enrolled_at %}
+                                                {{ progress_data.enrolled_at|date:"d-m (H:i)" }}  <!-- Ngày tham gia -->
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if progress_data.progress_change %}
+                                                {{ progress_data.progress_change }}%
+                                            {% else %}
+                                                <span class="text-muted">No previous data</span> 
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if progress_data.last_changed_at %}
+                                                {{ progress_data.last_changed_at|date:"d-m (H:i)" }}
+                                            {% else %}
+                                                <span class="text-muted">No changes</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+        </div>
+        
+        
+        
+
+        
+        
+        
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}

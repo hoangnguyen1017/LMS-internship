@@ -1,0 +1,132 @@
+
+{% load get_item %}
+    <!-- Sidebar -->
+    <style>
+        /* Custom active class styling */
+        .nav-link.active {
+            color: #ffffff !important;
+            background-color: #0d6efd !important; /* Dark background for active links */
+        }
+    </style>
+
+<ul class="nav flex-column">
+    {% if user.is_authenticated %}
+        {% for group in module_groups %}
+            {% if grouped_modules|get_item:group %}
+                <li class="nav-item">
+                    <a class="nav-link text-light d-flex align-items-center" href="#group-{{ group.id }}" 
+                        data-bs-toggle="collapse" role="button"
+                        aria-expanded="{% if group.modules.all.0.module_url == active_module_url %}true{% else %}false{% endif %}" 
+                        aria-controls="group-{{ group.id }}">
+                        <i class="fas fa-caret-right me-2" id="icon-{{ group.id }}"></i>
+                        {{ group.group_name }}
+                    </a>
+                    <ul class="collapse list-unstyled ps-4" id="group-{{ group.id }}">
+                        {% for module in grouped_modules|get_item:group %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light {% if module.module_url == active_module_url %}active{% endif %}" href="{% url module.module_url %}">
+                                    <i class="{{ module.icon }}"></i> &nbsp;{{ module.module_name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <hr class="border-secondary my-2">
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</ul>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebar');
+        const mainContentArea = document.getElementById('mainContentArea');
+        const toggleButton = document.getElementById('sidebarToggle');
+    
+        // Kiểm tra nếu ứng dụng hiện tại là student_portal
+        const isStudentPortal = window.location.pathname.includes("student_portal");
+        let isSidebarOpen = !isStudentPortal; // Mặc định đóng sidebar nếu là student_portal
+    
+        // Thiết lập trạng thái ban đầu
+        if (isSidebarOpen) {
+            sidebar.style.transform = 'translateX(0)';
+            mainContentArea.classList.add('col-md-10', 'offset-md-2');
+            mainContentArea.classList.remove('col-md-12');
+            toggleButton.innerHTML = '<i class="fas fa-arrow-alt-circle-right mt-1" style="font-size: 22px;"></i>';
+        } else {
+            sidebar.style.transform = 'translateX(-100%)';
+            mainContentArea.classList.add('col-md-12');
+            mainContentArea.classList.remove('col-md-10', 'offset-md-2');
+            toggleButton.innerHTML = '<i class="fas fa-arrow-alt-circle-left mt-1" style="font-size: 22px;"></i>';
+        }
+    
+        // Thêm sự kiện cho nút bật/tắt sidebar
+        toggleButton.addEventListener('click', function () {
+            if (isSidebarOpen) {
+                // Hide sidebar
+                sidebar.style.transform = 'translateX(-100%)';
+                mainContentArea.classList.remove('offset-md-2', 'col-md-10');
+                mainContentArea.classList.add('col-md-12');
+                toggleButton.innerHTML = '<i class="fas fa-arrow-alt-circle-left mt-1" style="font-size: 22px;"></i>';
+            } else {
+                // Show sidebar
+                sidebar.style.transform = 'translateX(0)';
+                mainContentArea.classList.remove('col-md-12');
+                mainContentArea.classList.add('col-md-10', 'offset-md-2');
+                toggleButton.innerHTML = '<i class="fas fa-arrow-alt-circle-right mt-1" style="font-size: 22px;"></i>';
+            }
+            isSidebarOpen = !isSidebarOpen;
+        });
+    });    
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Set active link and expand group based on current URL
+        const currentURL = window.location.pathname;
+        
+        document.querySelectorAll('.collapse').forEach(function (collapseElement) {
+            const moduleLinks = collapseElement.querySelectorAll('.nav-link');
+            let isActiveGroup = false;
+    
+            moduleLinks.forEach(function (moduleLink) {
+                if (moduleLink.getAttribute('href') === currentURL) {
+                    moduleLink.classList.add('active');
+                    isActiveGroup = true;
+                } else {
+                    moduleLink.classList.remove('active');
+                }
+            });
+    
+            // Expand group if it contains the active link
+            if (isActiveGroup) {
+                collapseElement.classList.add('show');
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // Khi người dùng bấm vào module trong sidebar
+        $("a.nav-link").on("click", function(event) {
+            event.preventDefault();  // Ngừng hành động mặc định (điều hướng trang)
+
+            var url = $(this).attr("href");  // Lấy URL của module
+
+            $.ajax({
+                url: url,  // Gửi yêu cầu đến URL của module
+                type: "GET",
+                data: {
+                    'search': $('#search-input').val(),  // Đưa tham số tìm kiếm nếu có
+                    'group': $(this).data('group')  // Thêm group nếu cần (hoặc bất kỳ tham số nào)
+                },
+                success: function(response) {
+                    // Cập nhật nội dung của #mainContentArea mà không làm mới sidebar
+                    $("#mainContentArea").html(response.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Có lỗi khi tải nội dung: ", error);
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,117 @@
+{% load get_item %}
+<!-- Navbar -->
+        <a class="navbar-brand" href="{% url 'student_portal:course_list' %}">FSA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                {% if user.is_authenticated %}
+                    {% for group in module_groups %}
+                        {% if grouped_modules|get_item:group %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown{{ group.id }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {{ group.group_name }}
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ group.id }}">
+                                    {% for module in grouped_modules|get_item:group %}
+                                        <li>
+                                            <a class="dropdown-item" href="{% url module.module_url %}">
+                                                <i class="{{ module.icon }}"></i> &nbsp;{{ module.module_name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </ul>
+
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav ms-auto">
+                {% include 'notification_bell.html' %}
+                {% if user.is_superuser %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="roleDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-shield"></i> Role
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="roleDropdown">
+                            <li>
+                                <form action="{% url 'role:select_role' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <select name="role" class="form-select" onchange="this.form.submit()">
+                                        <option value="" class="text-muted" disabled selected>Select Role</option>
+                                        {% for role in roles %}
+                                        <option value="{{ role.role_name }}" {% if role.role_name == request.user.profile.role.role_name or role.role_name == request.session.temporary_role %}selected{% endif %}>
+                                            {{ role.role_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{% url 'role:reset_role' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Reset Role</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main:home' %}" target="_blank">
+                            <i class="fas fa-user-shield"></i> Admin LMS
+                        </a>
+                    </li>
+                {%endif%}              
+                <a class="nav-link" href="{% url 'student_portal:course_list' %}">
+                    <i class="fas fa-user-graduate"></i> Go to Learn &nbsp;|&nbsp;
+                </a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link d-flex align-items-center" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if request.user.profile.profile_picture_url %}
+                            <img src="{{ request.user.profile.profile_picture_url }}" class="img-fluid rounded-circle" style="width: 28px; height: 28px; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user rounded-circle mt-1"></i>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end text-center" aria-labelledby="navbarUserDropdown">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'user:user_detail' request.user.id %}">
+                                {% if request.user.profile.profile_picture_url %}
+                                    <img src="{{ request.user.profile.profile_picture_url }}" class="img-fluid rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user rounded-circle me-2"></i>
+                                {% endif %}
+                                Profile
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                
+                        <!-- My Learning -->
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'mylearning:index' %}">
+                                <i class="fas fa-user-graduate me-2"></i> My Learning
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                
+                        <!-- Logout -->
+                        <li>
+                            <form action="{% url 'main:logout' %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            {% else %}
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'main:register_email' %}">Register</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'main:login' %}">Login</a></li>
+            </ul>
+            {% endif %}
+        </div>

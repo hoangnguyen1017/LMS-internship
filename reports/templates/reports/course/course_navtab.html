@@ -1,0 +1,25 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'course_completion' %}active{% endif %}" href="{% url 'reports:course_completion_report' %}">
+            Course Completion
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'material_usage' %}active{% endif %}" href="{% url 'reports:material_usage_report' %}">
+            Material Usage
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'material_type_distribution' %}active{% endif %}" href="{% url 'reports:material_type_distribution_report' %}">
+            Material Type Distribution
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'course_overview' %}active{% endif %}" href="{% url 'reports:course_overview_report' %}">
+            Course Overview
+        </a>
+    </li>
+    <li class="nav-item ms-auto">
+        <a href="{% url 'reports:report_dashboard' %}" class="btn btn-secondary">Back to Reports</a>
+    </li>
+</ul>

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mt-4">
+    <!-- Include Tab Navigation -->
+    {% include 'reports/course/course_navtab.html' with active_tab='course_overview' %}
+
+    <h1>Course Overview Report</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Course Name</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Creator</th>
+                <th>Instructor</th>
+                <th>Published</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ course.course_name }}</td>
+                <td>{{ course.course_code }}</td>
+                <td>{{ course.description }}</td>
+                <td>{{ course.creator.username }}</td>
+                <td>{{ course.instructor.username }}</td>
+                <td>{{ course.published }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

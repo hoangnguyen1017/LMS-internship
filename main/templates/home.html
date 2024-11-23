@@ -3,32 +3,36 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Welcome to the Learning Management System</h1>
-    
-    <!-- Loop through each module group -->
+    <h1 class="text-center mb-5 display-5 fw-bold text-primary">Learning Management System</h1>
+
     {% for group in module_groups %}
     <div class="mb-5">
-        <h2 class="text-primary mb-3">{{ group.name }}</h2>  <!-- Display the Module Group name -->
+        <h2 class="text-primary fw-semibold mb-4">{{ group.name }}</h2>  
 
-        <div class="row">
-            <!-- Loop through each module within the current group -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             {% for module in modules %}
                 {% if module.module_group == group %}
-                <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <!-- Module Icon -->
-                            <div class="icon mb-3">
-                                <i class="{{ module.icon }} fa-3x text-info"></i>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <a href="{% if user.is_authenticated %}{% url module.module_url %}{% else %}{% url 'main:login' %}{% endif %}" class="text-decoration-none text-dark">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                                
+                                <!-- Module Icon -->
+                                <div class="icon mb-3">
+                                    <i class="{{ module.icon }} fa-3x text-primary"></i>
+                                </div>
+                                
+                                <!-- Module Name -->
+                                <h5 class="card-title mb-2 fs-4">{{ module.module_name }}</h5>
+                                
+                                <!-- Message for users who are not logged in -->
+                                {% if not user.is_authenticated %}
+                                <p class="text-muted small mt-3">
+                                    Please <a href="{% url 'main:login' %}" class="text-primary">log in</a> to access
+                                </p>
+                                {% endif %}
                             </div>
-
-                            <!-- Module Name -->
-                            <h5 class="card-title">{{ module.module_name }}</h5>
-
-                            <!-- Module Button -->
-                            <a href="{% url module.module_url %}" class="btn btn-outline-primary mt-3">Go to {{ module.module_name }}</a>
-                        </div>
+                        </a>
                     </div>
                 </div>
                 {% endif %}
@@ -36,5 +40,5 @@
         </div>
     </div>
     {% endfor %}
-</div>
+
 {% endblock %}

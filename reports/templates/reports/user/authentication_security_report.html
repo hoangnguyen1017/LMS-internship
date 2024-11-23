@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    {% include 'reports/user/user_navtab.html' with active_tab='authentication_security_report' %}
+
+    <div class="container mt-4">
+        <h1>Authentication & Security Report</h1>
+        <p>Reporting period: {{ start_of_week }} to {{ end_of_week }}</p>
+        
+        <!-- 2FA Enabled/Disabled Chart -->
+        <h2>2FA Enabled Status</h2>
+        <div class="chart-container">
+            <canvas id="twoFaStatusChart"></canvas>
+        </div>
+
+        <form method="GET" action="{% url 'reports:authentication_security_report' %}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by username" value="{{ search_query }}">
+                <button type="submit" class="btn btn-search">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+        </form>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Total Logins</th>
+                    <th>Successful Logins</th>
+                    <th>Failed Logins</th>
+                    <th>Password Attempts</th>
+                    <th>Total Password Changes</th>
+                    <th>Last Password Change</th>
+                    <th>Password Warning</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in login_data %}
+                <tr>
+                    <td>{{ entry.user__username }}</td>
+                    <td>{{ entry.total_logins }}</td>
+                    <td>{{ entry.successful_logins }}</td>
+                    <td>{{ entry.failed_logins }}</td>
+                    <td>{{ entry.password_attempts }}</td>
+                    <td>{{ entry.total_password_changes }}</td>
+                    <td>{% if entry.last_password_change %}{{ entry.last_password_change|date:"Y-m-d H:i:s" }}{% else %}N/A{% endif %}</td>
+                    <td>
+                        {% if entry.password_warning %}
+                            <span class="badge bg-danger">Warning</span>
+                        {% else %}
+                            <span class="badge bg-success">Safe</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if entry.password_warning %}
+                        <form id="emailWarningForm" method="POST" action="{% url 'reports:send_warning_email' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">Send Warning Email</button>
+                        </form>
+                        
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>Safe</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">No login data available for this week.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if login_data.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">&laquo; first</a>
+                    <a href="?page={{ login_data.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ login_data.number }} of {{ login_data.paginator.num_pages }}.
+                </span>
+
+                {% if login_data.has_next %}
+                    <a href="?page={{ login_data.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">next</a>
+                    <a href="?page={{ login_data.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-group {
+        max-width: 30vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    .form-control {
+        height: 3.5vh;
+        font-size: 1.5vh;
+        border-radius: 0;
+    }
+    .btn-search {
+        background-color: white;
+        border: 1px solid #007bff;
+        color: #007bff;
+        padding: 0.8vh 2vh;
+        font-size: 0vh;
+        border-radius: 0;
+    }
+    .btn-search:hover {
+        background-color: #007bff;
+        color: white;
+        border-color: #0056b3;
+    }
+    .btn-search i {
+        font-size: 1.6vh;
+        color: #007bff;
+    }
+
+    .chart-container {
+        max-width: 40vh;
+        max-height: 40vh;
+        margin: auto;
+    }
+
+    #twoFaStatusChart {
+        width: 100% !important;
+        height: auto !important;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('twoFaStatusChart').getContext('2d');
+    const twoFaEnabledCount = {{ two_fa_enabled_count }};
+    const twoFaDisabledCount = {{ two_fa_disabled_count }};
+
+    const twoFaStatusChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['2FA Enabled', '2FA Disabled'],
+            datasets: [{
+                data: [twoFaEnabledCount, twoFaDisabledCount],
+                backgroundColor: ['#A5D6A7', '#BDBDBD'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            return `${label}: ${value} users`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

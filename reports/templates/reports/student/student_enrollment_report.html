@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <!-- Include Tab Navigation -->
+    {% include 'reports/student/student_navtab.html' with active_tab='student_enrollment' %}
+    <h1>Student Enrollment Report</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <td>#</td>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Date Enrolled</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ enrollment.student.username }}</td>
+                <td>{{ enrollment.course.course_name }}</td>
+                <td>{{ enrollment.date_enrolled }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

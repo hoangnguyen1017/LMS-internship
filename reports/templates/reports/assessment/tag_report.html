@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <!-- Include Tab Navigation -->
+    {% include 'reports/assessment/assessment_navtab.html' with active_tab='tag_report' %}
+    <h1>Tag Report</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <td>#</td>
+                <th>Tag Name</th>
+                <th>Topic</th>
+                <th>Course Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tag in tags %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ tag.name }}</td>
+                <td>{{ tag.topic.name }}</td>
+                <td>{{ tag.course_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

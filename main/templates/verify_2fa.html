@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực 2FA</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #007bff;
+            color: white;
+            font-size: 30px;
+            margin: 15px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .circle:hover {
+            background-color: #0056b3;
+        }
+
+        .circle:active {
+            background-color: #004085;
+        }
+
+        .timer {
+            font-size: 18px;
+            color: #ff0000;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .timer span {
+            font-size: 28px;
+            color: #ff4500;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .message a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .message a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Xác thực 2FA</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                {% for code in choices %}
+                    <button type="submit" name="selected_code" value="{{ code }}" class="circle">{{ code }}</button>
+                {% endfor %}
+            </div>
+            <div class="timer" id="timer">
+                Thời gian còn lại: <span id="countdown">20</span> giây
+            </div>
+        </form>
+        <div class="message">
+            <p>Không nhận được mã? <a href="{% url 'main:login' %}">Quay lại đăng nhập</a></p>
+        </div>
+    </div>
+
+    <script>
+        let countdown = 20;
+        const timerElement = document.getElementById('countdown');
+
+        const countdownInterval = setInterval(() => {
+            countdown -= 1;
+            timerElement.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                alert("Mã xác thực đã hết hạn. Vui lòng đăng nhập lại.");
+                window.location.href = "{% url 'main:login' %}";  // Chuyển về trang đăng nhập khi hết thời gian
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>

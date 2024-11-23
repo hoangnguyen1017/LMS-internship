@@ -8,4 +8,5 @@ urlpatterns = [
     path('training_programs/edit/<int:pk>/', views.training_program_edit, name='training_program_edit'),
     path('training_programs/delete/<int:pk>/', views.training_program_delete, name='training_program_delete'),
     path('training_programs/<int:program_id>/manage_subjects/', views.manage_subjects, name='training_program_manage_subjects'),
+
 ]

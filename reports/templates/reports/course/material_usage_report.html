@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <!-- Include Tab Navigation -->
+    {% include 'reports/course/course_navtab.html' with active_tab='material_usage' %}
+    <h1>Material Usage Report</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <td>#</td>
+                <th>User</th>
+                <th>Session</th>
+                <th>Material</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for completion in completions %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ completion.user.username }}</td>
+                <td>{{ completion.session.name }}</td>
+                <td>{{ completion.material.title }}</td>
+                <td>{{ completion.completed }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

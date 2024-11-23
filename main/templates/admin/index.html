@@ -1,0 +1,15 @@
+{% extends "admin/index.html" %}
+
+{% block usertools %}
+    <!-- Thêm nút Lock/Unlock -->
+    {% if is_site_locked %}
+        <a href="{% url 'main:unlock_site' %}" style="background-color: #00CC00; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;">
+            Unlock Website
+        </a>
+    {% else %}
+        <a href="{% url 'main:lock_site' %}" style="background-color: #de0034; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;">
+            Lock Website
+        </a>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

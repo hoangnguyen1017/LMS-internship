@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import TrainingProgram
-from training_program_subjects.models import TrainingProgramSubjects
-from .forms import TrainingProgramForm 
-from training_program_subjects.forms import TrainingProgramSubjectsForm 
+from training_program.models import TrainingProgram
 from module_group.models import ModuleGroup
+from user.models import User
+from subject.models import Subject  # Ensure you import the Subject model
+
+from .forms import TrainingProgramForm 
+
 # Home view
 def home(request):
     return render(request, 'home.html')
@@ -11,18 +13,20 @@ def home(request):
 # Manage subjects in a training program
 def manage_subjects(request, program_id):
     program = get_object_or_404(TrainingProgram, pk=program_id)
-    if request.method == 'POST':
-        form = TrainingProgramSubjectsForm(request.POST, instance=program)
-        if form.is_valid():
-            selected_subjects = form.cleaned_data['subjects']
-            TrainingProgramSubjects.objects.filter(program=program).delete()
-            for subject in selected_subjects:
-                TrainingProgramSubjects.objects.create(program=program, subject=subject)
-            return redirect('training_program_list')
-    else:
-        form = TrainingProgramSubjectsForm(instance=program)
 
-    return render(request, 'manage_subjects.html', {'form': form, 'program': program})
+    all_subjects = Subject.objects.all()  # Get all available subjects
+ 
+    if request.method == 'POST':
+        # Update the program's subjects
+        selected_subjects = request.POST.getlist('subjects')  # Get selected subjects from the form
+        program.subjects.set(selected_subjects)  # Update the ManyToMany relationship
+        return redirect('training_program:training_program_list')
+    
+    return render(request, 'manage_subjects.html', {
+        'program': program,
+        'all_subjects': all_subjects,
+        'selected_subjects': program.subjects.all(),  # Pass the currently selected subjects
+    })
 
 # TrainingProgram views
 def training_program_list(request):
@@ -31,7 +35,7 @@ def training_program_list(request):
     return render(request, 'training_program_list.html', {
         'programs': programs,
         'module_groups': module_groups,
-        })
+    })
 
 def training_program_add(request):
     if request.method == 'POST':

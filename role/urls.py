@@ -12,5 +12,4 @@ urlpatterns = [
     path('export/', views.export_roles, name='export_roles'),
     path('select-role/', views.select_role, name='select_role'),
     path('reset-role/', views.reset_role, name='reset_role'),
-    path('role/<int:role_id>/permissions/', views.role_permissions, name='role_permission'),
 ]

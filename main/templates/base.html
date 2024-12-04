@@ -32,30 +32,25 @@
     </div>
 
     <div class="container-fluid" style="display: flex; flex-direction: column;">
-        <button id="sidebarToggle" class="btn btn-outline-primary position-fixed" 
-                style="top: 10px; left: 10px; z-index: 1000;">
-            <i class="fas fa-arrow-alt-circle-right mt-1" style="font-size: 22px;"></i>
-        </button>
-    
         <div class="row mt-5" style="flex-grow: 1;">
             {% if user.is_authenticated %}
                 {% if request.user.profile.role.role_name != 'Student' and request.session.temporary_role != 'Student' %}
                 <div class="col-md-2 col-sm-12 bg-dark mt-2" id="sidebar" 
-                     style="overflow-y: auto; height: 95%; position: fixed; z-index:10; 
-                     {% if request.resolver_match.app_name == 'student_portal' %}
-                         transform: translateX(-100%);
-                     {% else %}
-                         transform: translateX(0);
-                     {% endif %}
-                     transition: transform 0.3s ease;">
-                        {% include "admin_sidebar.html" %}
+                    style="overflow-y: auto; height: 95%; position: fixed; z-index:10; 
+                    {% if request.resolver_match.url_name == 'home' and request.resolver_match.app_name == 'main' %}
+                        transform: translateX(-100%);
+                    {% else %}
+                        transform: translateX(0);
+                    {% endif %}
+                    transition: transform 0.3s ease;">
+                    {% include "admin_sidebar.html" %}
                 </div>
                 {% endif %}
             {% endif %}
         
             <div class="mt-3
                 {% if user.is_authenticated %}
-                    {% if request.resolver_match.app_name == "student_portal" or request.user.profile.role.role_name == 'Student' or request.session.temporary_role == 'Student' %}
+                    {% if request.resolver_match.app_name == "main" or request.user.profile.role.role_name == 'Student' or request.session.temporary_role == 'Student' %}
                         col-sm-12
                     {% else %}
                         col-md-10 col-sm-12 offset-md-2
@@ -67,7 +62,6 @@
                 {% block content %}{% endblock %}
             </div>
         </div>
-        
     </div>
     
     <button onclick="scrollToTop()" id="scrollToTopButton" title="Top page"

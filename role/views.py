@@ -1,18 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from role.models import Role, RoleModule
 from role.forms import RoleForm, ExcelImportForm
-import pandas as pd
 from django.contrib import messages
 from django.http import HttpResponse
-import openpyxl
-from module_group.models import ModuleGroup, Module
+from module_group.models import Module
 from django.contrib.auth.models import Permission
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from user.models import Profile
 from .admin import RoleResource
 from tablib import Dataset
-from django.core.files.uploadedfile import UploadedFile
+from user.models import User
 
 def role_list(request):
     roles = Role.objects.all()  # Lấy danh sách tất cả các role
@@ -64,6 +62,7 @@ def role_add(request, role_id=None):
     }
     return render(request, 'role_form.html', context)
 
+
 def role_edit(request, pk):
     role = get_object_or_404(Role, pk=pk)  # Lấy role cần chỉnh sửa
     form = RoleForm(request.POST or None, instance=role)  # Tạo form liên kết với role
@@ -98,11 +97,22 @@ def role_edit(request, pk):
 
 
 def role_delete(request, pk):
+    # Get the role object by primary key
     role = get_object_or_404(Role, pk=pk)
+    
+    # Retrieve users associated with this role
+    users_with_role = User.objects.filter(profile__role=role)  # Adjust based on your relation between User and Role
+
+    # Handle POST request for deleting the role
     if request.method == 'POST':
         role.delete()
-        return redirect('role:role_list')
-    return render(request, 'role_confirm_delete.html', {'role': role})
+        return redirect('role:role_list')  # Redirect to the role list after deletion
+
+    # Render the delete confirmation page with the role and users with that role
+    return render(request, 'role_confirm_delete.html', {
+        'role': role,
+        'users_with_role': users_with_role,  # Pass the users to the template
+    })
 
 
 def export_roles(request):
@@ -121,7 +131,6 @@ def export_roles(request):
     response.write(dataset.xlsx)  # Đảm bảo sử dụng đúng phương thức để xuất ra xlsx
 
     return response
-
 
 
 def import_roles(request):
@@ -216,39 +225,3 @@ def reset_role(request):
             messages.info(request, "Không có vai trò tạm thời nào để đặt lại.")
 
     return redirect('main:home')
-
-
-def role_permissions(request, role_id):
-    role = get_object_or_404(Role, id=role_id)
-
-    specific_permissions = Role._meta.permissions
-    all_permissions = Permission.objects.filter(
-        codename__in=[codename for codename, _ in specific_permissions]
-    )
-    
-    all_modules = Module.objects.all()
-    selected_modules = role.modules.all()
-    
-    if request.method == "POST":
-        selected_permissions = request.POST.getlist('permissions')
-        selected_modules_ids = request.POST.getlist('modules')
-        
-        # Update permissions and modules for the role
-        role.permissions.set(Permission.objects.filter(id__in=selected_permissions))
-        role.modules.set(Module.objects.filter(id__in=selected_modules_ids))
-        role.save()
-
-        # Add a success message
-        messages.success(request, 'Permissions and modules updated successfully.')
-
-        # Redirect to role list after saving
-        return redirect('role:role_list')
-
-    context = {
-        'role': role,
-        'all_permissions': all_permissions,
-        'selected_permissions': role.permissions.all(),
-        'all_modules': all_modules,
-        'selected_modules': selected_modules,
-    }
-    return render(request, 'role_permission.html', context)

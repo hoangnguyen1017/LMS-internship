@@ -12,7 +12,6 @@ from course.models import Enrollment
 from quiz.models import StudentQuizAttempt
 from activity.models import UserActivityLog
 from django.contrib.auth.hashers import check_password
-from import_export.formats.base_formats import XLSX
 from .admin import UserProfileResource
 from tablib import Dataset
 from django.utils import timezone
@@ -204,11 +203,6 @@ def user_detail(request, pk):
 def user_add(request):
     is_superuser = request.user.is_superuser
 
-    # Kiểm tra profile của người dùng
-    if not is_superuser and (not hasattr(request.user, 'profile') or request.user.profile is None):
-        messages.error(request, "Bạn không có quyền.")  # Thông báo lỗi
-        return redirect('user:user_list')  # Chuyển hướng đến danh sách người dùng
-
 
     if request.method == 'POST':
         form = UserForm(request.POST)
@@ -307,7 +301,7 @@ def user_edit(request, pk):
 
             # Kiểm tra và thay đổi vai trò nếu cần
             new_role_name = form.cleaned_data.get('role')  # lấy tên vai trò
-            if new_role_name and new_role_name != old_role.role_name:  # so sánh với tên vai trò cũ
+            if new_role_name and (old_role is None or new_role_name != old_role.role_name):
                 try:
                     # Truy vấn Role dựa trên tên vai trò
                     new_role = Role.objects.get(role_name = new_role_name)
@@ -353,7 +347,7 @@ def user_edit(request, pk):
 
             if new_password and request.user.pk == user.pk:
                 logout(request)  # Đăng xuất người dùng
-                messages.success(request, "Mật khẩu của bạn đã được thay đổi. Vui lòng đăng nhập lại.")
+                messages.success(request, "Your password has been changed. Please log in again.")
                 return redirect('main:login')  # Chuyển hướng đến trang đăng nhập
 
             # Cập nhật session nếu người dùng thay đổi chính thông tin của mình
@@ -367,10 +361,10 @@ def user_edit(request, pk):
                 request.session['learning_style'] = profile.learning_style
                 request.session['preferred_language'] = profile.preferred_language
 
-            messages.success(request, f"Người dùng {user.username} đã được cập nhật thành công.")
+            messages.success(request, f"User {user.username} updated successfully.")
             return redirect('user:user_edit', pk=user.pk)
         else:
-            messages.error(request, "Vui lòng sửa các lỗi bên dưới.")
+            messages.error(request, "Please fix the errors below.")
     else:
         form = UserForm(instance=user)
 

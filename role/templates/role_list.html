@@ -22,9 +22,12 @@
             <i class="fas fa-file-import"></i> Import
         </button>
         
-        <a href="{% url 'role:export_roles' %}" class="btn btn-secondary" title="Export Roles to Excel" data-toggle="tooltip">
+        <a href="{% url 'role:export_roles' %}" class="btn btn-info" title="Export Roles to Excel" data-toggle="tooltip">
             <i class="fas fa-file-export"></i> Export
         </a>
+        <button class="btn btn-warning" title="Refresh Page" onclick="location.reload();" data-toggle="tooltip">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
     </div>
 
     <table class="table table-striped">

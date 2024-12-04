@@ -5,16 +5,26 @@
 
 {% block content %}
 <form method="post" enctype="multipart/form-data" style="max-width: 100%; max-height: 100vh; transition: all 0.3s ease-in-out;" class="needs-validation" novalidate>
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
     <div class="row mt-4">
         <div class="col-md-3">
             <div class="p-4 justify-content-center text-center bg-gradient-light rounded pt-3">
                 <div class="form-group">
                     <label class="h5 mt-2 mb-2">Profile Picture</label>
                     <div class="avatar-wrapper d-flex justify-content-center align-items-center mb-2">
-                        <img src="{% if user.profile.profile_picture_url %}{{ user.profile.profile_picture_url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}" 
-                            class="img-fluid rounded-circle" style="width: 10vw; height: 20vh; object-fit: cover;" alt="{{ user.username }}">
+                        <img 
+                            src="{% if form.instance.pk and user.profile.profile_picture_url %}{{ user.profile.profile_picture_url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}" 
+                            class="img-fluid rounded-circle" 
+                            style="width: 10vw; height: 20vh; object-fit: cover;" 
+                            alt="{% if form.instance.pk %}{{ user.username }}{% else %}Default Profile{% endif %}">
                     </div>
-                    
+                
                     {% if form.profile_picture_url.errors %}
                         <div class="invalid-feedback d-block">
                             {% for error in form.profile_picture_url.errors %}
@@ -23,6 +33,7 @@
                         </div>
                     {% endif %}
                 </div>
+                
                 <div class="text-center mt-3">
                     {% if request.user.is_authenticated %}
                         {% if form.instance.pk %}

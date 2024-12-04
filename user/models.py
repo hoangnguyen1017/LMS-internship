@@ -73,6 +73,29 @@ class Profile(models.Model):
         if hasattr(self, 'user') and hasattr(self.user, 'instructor'):
             return self.user.instructor.enrolled_courses.all()
         return []
+    
+
+    def calculate_completion_percentage(self):
+        total_fields = 6  # Tổng số trường cần kiểm tra
+        completed_fields = 0
+
+        # Kiểm tra các trường đã điền thông tin
+        if self.role:
+            completed_fields += 1
+        if self.profile_picture_url:
+            completed_fields += 1
+        if self.bio:
+            completed_fields += 1
+        if self.interests:
+            completed_fields += 1
+        if self.learning_style:
+            completed_fields += 1
+        if self.preferred_language:
+            completed_fields += 1
+
+        # Tính toán phần trăm hoàn thành
+        completion_percentage = (completed_fields / total_fields) * 100
+        return completion_percentage
 
 class Instructor(models.Model):
     user = models.OneToOneField('user.User', on_delete=models.CASCADE, primary_key=True)
@@ -87,7 +110,3 @@ class Instructor(models.Model):
 
     def total_enrolled_courses(self):
         return self.enrolled_courses.count()
-
-
-
-    

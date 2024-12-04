@@ -121,6 +121,8 @@ INSTALLED_APPS = [
     #group05 
     'activity', 'analytics_report', 'book', 'progress_notification',
     'achievement', 'quiz_bank', # -- add this app
+    'rest_framework',
+    'api',
 
 ]
 
@@ -135,7 +137,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'activity.activity_tracking_middleware.ActivityTrackingMiddleware',
     'main.middleware.SiteLockMiddleware'
-
 ]
 
 ROOT_URLCONF = 'LMS_SYSTEM.urls'
@@ -154,6 +155,7 @@ TEMPLATES = [
                 'main.context_processors.site_status',
                 'role.context_processors.user_roles',
                 'module_group.module_context_processors.module_context',
+                'user.context_processors.profile_completion_percentage',
             ],
         },
     },
@@ -254,3 +256,9 @@ logging.basicConfig(
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 CSRF_TRUSTED_ORIGINS = ['https://lms.truong51972.id.vn']
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}
